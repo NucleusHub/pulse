@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { usePulse } from './composables/usePulse.js'
-import { useDashboard, SIZE_DIMS } from './composables/useDashboard.js'
+import { useDashboard, getWidgetWidth } from './composables/useDashboard.js'
 import PulseSidebar from './components/PulseSidebar.vue'
 import WidgetLibraryModal from './components/WidgetLibraryModal.vue'
 import PulseWidgetControls from './components/PulseWidgetControls.vue'
@@ -22,7 +22,7 @@ const showLibrary = ref(false)
 // Controls float above each widget by this many pixels
 const CONTROLS_H = 34
 
-// All manifests minus the system-only core widget
+// Exclude fully-locked system modules (core); keep dashboard + system-hub widgets
 const dashboardManifests = computed(() =>
   props.manifests.filter(m => m.slot !== 'system')
 )
@@ -61,7 +61,7 @@ const editableWidgets = computed(() =>
       :style="{
         left:  w.position.x + 'px',
         top:   (w.position.y - CONTROLS_H) + 'px',
-        width: (SIZE_DIMS[w.size] ?? 360) + 'px',
+        width: getWidgetWidth(w, w.size) + 'px',
       }"
     >
       <PulseWidgetControls :widget="w" />

@@ -5,6 +5,33 @@ const SNAP_THRESHOLD = 15
 
 export const SIZE_DIMS = { small: 280, medium: 360, large: 480 }
 
+// Hub UI pseudo-widgets — movable + resizable but not disableable
+export const HUB_MANIFESTS = [
+  {
+    id: 'hub-theme',
+    name: 'Theme Changer',
+    slot: 'system-hub',
+    sizes: ['small', 'large'],
+    defaultSize: 'small',
+    sizeDims: { small: 114, large: 210 },
+  },
+  {
+    id: 'hub-apps',
+    name: 'App Buttons',
+    slot: 'system-hub',
+    sizes: ['small', 'medium', 'large'],
+    defaultSize: 'medium',
+    sizeDims: { small: 280, medium: 340, large: 420 },
+  },
+]
+
+// Returns the pixel width for a widget at a given size,
+// respecting per-widget sizeDims when present.
+export function getWidgetWidth(widget, size) {
+  const s = size ?? widget.size ?? 'medium'
+  return widget.sizeDims?.[s] ?? SIZE_DIMS[s] ?? 360
+}
+
 // Module-level singleton — all callers share the same reactive state
 const state = ref(null)
 const loading = ref(false)
@@ -62,54 +89,65 @@ export function useDashboard() {
     }
   }
 
+  function defaultPosition(m, stackOffset) {
+    const vw = typeof window !== 'undefined' ? window.innerWidth  : 1280
+    const vh = typeof window !== 'undefined' ? window.innerHeight : 768
+
+    if (m.id === 'hub-theme') {
+      const w = m.sizeDims?.small ?? 114
+      return { x: Math.max(0, vw - w - 16), y: 16 }
+    }
+    if (m.id === 'hub-apps') {
+      const w = m.sizeDims?.medium ?? 340
+      return { x: Math.max(16, Math.round((vw - w) / 2)), y: Math.max(60, Math.round((vh - 280) / 2)) }
+    }
+    // Regular widgets: stack in the bottom-right
+    const w = getWidgetWidth(m, m.defaultSize)
+    return {
+      x: Math.max(16, vw - w - 20),
+      y: Math.max(16, vh - 220 - stackOffset * 220),
+    }
+  }
+
   // Seeds default state for any widget not yet tracked. Does NOT save to DB.
   function ensureWidgets(manifests) {
     if (!state.value) return
     let stackOffset = state.value.widgets.filter(w => w.enabled).length
     for (const m of manifests) {
       if (state.value.widgets.find(w => w.id === m.id)) continue
-      const w = SIZE_DIMS[m.defaultSize ?? 'medium'] ?? 360
-      const vw = typeof window !== 'undefined' ? window.innerWidth  : 1280
-      const vh = typeof window !== 'undefined' ? window.innerHeight : 768
       state.value.widgets.push({
         id:       m.id,
         enabled:  m.enabled !== false,
         locked:   !!m.locked,
-        position: {
-          x: Math.max(16, vw - w - 20),
-          y: Math.max(16, vh - 220 - stackOffset * 220),
-        },
-        size:   m.defaultSize ?? m.sizes?.[0] ?? 'medium',
-        config: {},
+        position: defaultPosition(m, stackOffset),
+        size:     m.defaultSize ?? m.sizes?.[0] ?? 'medium',
+        config:   {},
       })
       stackOffset++
     }
   }
 
-  function snapPosition(x, y, excludeId, size) {
-    const w = SIZE_DIMS[size] ?? 360
+  function snapPosition(x, y, excludeId, size, overrideWidth) {
+    const w = overrideWidth ?? SIZE_DIMS[size] ?? 360
     let sx = x
     let sy = y
     const vw = typeof window !== 'undefined' ? window.innerWidth : 1280
 
-    // Snap to viewport left/top/right
     if (Math.abs(sx) < SNAP_THRESHOLD)           sx = 0
     if (Math.abs(sy) < SNAP_THRESHOLD)           sy = 0
     if (Math.abs(sx + w - vw) < SNAP_THRESHOLD)  sx = vw - w
 
     for (const other of (state.value?.widgets ?? [])) {
       if (other.id === excludeId || !other.enabled) continue
-      const ow = SIZE_DIMS[other.size] ?? 360
+      const ow = other.sizeDims?.[other.size] ?? SIZE_DIMS[other.size] ?? 360
       const ox = other.position.x
       const oy = other.position.y
 
-      // Horizontal alignment
-      if (Math.abs(sx - ox) < SNAP_THRESHOLD)           sx = ox
-      if (Math.abs(sx + w - (ox + ow)) < SNAP_THRESHOLD) sx = ox + ow - w
-      if (Math.abs(sx - (ox + ow)) < SNAP_THRESHOLD)     sx = ox + ow
-      if (Math.abs(sx + w - ox) < SNAP_THRESHOLD)        sx = ox - w
-      // Vertical alignment
-      if (Math.abs(sy - oy) < SNAP_THRESHOLD)            sy = oy
+      if (Math.abs(sx - ox) < SNAP_THRESHOLD)             sx = ox
+      if (Math.abs(sx + w - (ox + ow)) < SNAP_THRESHOLD)  sx = ox + ow - w
+      if (Math.abs(sx - (ox + ow)) < SNAP_THRESHOLD)      sx = ox + ow
+      if (Math.abs(sx + w - ox) < SNAP_THRESHOLD)         sx = ox - w
+      if (Math.abs(sy - oy) < SNAP_THRESHOLD)             sy = oy
     }
 
     return { x: Math.max(0, sx), y: Math.max(0, sy) }

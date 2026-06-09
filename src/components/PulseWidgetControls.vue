@@ -28,7 +28,8 @@ function startDrag(e) {
 function duringDrag(e) {
   const rawX = dragOrigin.widgetX + e.clientX - dragOrigin.mouseX
   const rawY = dragOrigin.widgetY + e.clientY - dragOrigin.mouseY
-  const { x, y } = snapPosition(rawX, rawY, props.widget.id, props.widget.size)
+  const thisWidth = props.widget.sizeDims?.[props.widget.size] ?? undefined
+  const { x, y } = snapPosition(rawX, rawY, props.widget.id, props.widget.size, thisWidth)
   const ws = getWidgetState(props.widget.id)
   if (ws) {
     ws.position.x = x
@@ -116,10 +117,10 @@ function disableWidget() {
         </svg>
       </button>
 
-      <div class="divider" />
-
-      <!-- Disable -->
-      <button class="ctrl-btn disable-btn" @click="disableWidget">Disable</button>
+      <template v-if="widget.slot !== 'system-hub'">
+        <div class="divider" />
+        <button class="ctrl-btn disable-btn" @click="disableWidget">Disable</button>
+      </template>
     </div>
   </div>
 </template>
