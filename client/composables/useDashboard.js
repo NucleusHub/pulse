@@ -21,7 +21,7 @@ export const HUB_MANIFESTS = [
     name: 'App Buttons',
     slot: 'system-hub',
     sizes: ['small', 'medium', 'large'],
-    defaultSize: 'medium',
+    defaultSize: 'large',
     sizeDims: { small: 280, medium: 340, large: 420 },
     overlayControls: false,
   },
