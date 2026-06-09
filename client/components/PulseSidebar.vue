@@ -4,6 +4,7 @@ import { useDashboard } from '../composables/useDashboard.js'
 
 const props = defineProps({
   manifests: { type: Array, default: () => [] },
+  inline: { type: Boolean, default: false },
 })
 
 defineEmits(['close', 'open-library'])
@@ -41,13 +42,13 @@ function disableWidget(id) {
 </script>
 
 <template>
-  <aside class="sidebar">
+  <aside class="sidebar" :class="{ 'is-inline': inline }">
     <div class="sidebar-header">
       <div class="sidebar-title">
         <span class="pulse-glyph">◈</span>
         Pulse
       </div>
-      <button class="icon-btn" title="Close Pulse" @click="$emit('close')">
+      <button v-if="!inline" class="icon-btn" title="Close Pulse" @click="$emit('close')">
         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>
@@ -120,6 +121,19 @@ function disableWidget(id) {
   overflow: hidden;
   color: #fff;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* When rendered inside the mobile drawer — no absolute positioning, fills parent */
+.sidebar.is-inline {
+  position: static;
+  width: 100%;
+  height: auto;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: transparent;
 }
 
 .sidebar-header {

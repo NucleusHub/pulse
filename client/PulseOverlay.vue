@@ -13,22 +13,26 @@ const props = defineProps({
 const { closePulse } = usePulse()
 const { widgets: states } = useDashboard()
 
-function onKeydown(e) { if (e.key === 'Escape') closePulse() }
-onMounted(() => window.addEventListener('keydown', onKeydown))
-onUnmounted(() => window.removeEventListener('keydown', onKeydown))
-
+const isMobile    = ref(typeof window !== 'undefined' ? window.innerWidth < 768 : false)
 const showLibrary = ref(false)
 
-// Controls float above each widget by this many pixels
 const CONTROLS_H = 34
 
-// Exclude fully-locked system modules (core); keep dashboard + system-hub widgets
+function onKeydown(e) { if (e.key === 'Escape') closePulse() }
+function onResize()   { isMobile.value = window.innerWidth < 768 }
+onMounted(() => {
+  window.addEventListener('keydown', onKeydown)
+  window.addEventListener('resize', onResize)
+})
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKeydown)
+  window.removeEventListener('resize', onResize)
+})
+
 const dashboardManifests = computed(() =>
   props.manifests.filter(m => m.slot !== 'system')
 )
 
-// Merge manifest metadata with live dashboard state for enabled widgets.
-// Skip widgets with overlayControls:false — they render their own inline Pulse controls.
 const editableWidgets = computed(() =>
   dashboardManifests.value
     .filter(m => m.overlayControls !== false)
@@ -40,45 +44,64 @@ const editableWidgets = computed(() =>
     })
     .filter(w => w.enabled)
 )
+
+function anchorTop(w) {
+  return (w.position.y < CONTROLS_H
+    ? w.position.y + (w.height ?? 48)
+    : w.position.y - CONTROLS_H) + 'px'
+}
 </script>
 
 <template>
-  <!-- Full-screen fixed overlay. pointer-events:none by default — only controls are interactive -->
   <div class="pulse-overlay">
-
-    <!-- Subtle editing mode backdrop -->
     <div class="pulse-backdrop" />
 
-    <!-- Floating "editing" indicator -->
-    <div class="edit-banner" aria-live="polite">
-      <span class="edit-dot" />
-      Editing dashboard
+    <!-- Desktop-only elements: edit banner + widget controls -->
+    <template v-if="!isMobile">
+      <div class="edit-banner" aria-live="polite">
+        <span class="edit-dot" />
+        Editing dashboard
+      </div>
+
+      <div
+        v-for="w in editableWidgets"
+        :key="w.id"
+        class="widget-anchor"
+        :style="{
+          left:  w.position.x + 'px',
+          top:   anchorTop(w),
+          width: getWidgetWidth(w, w.size) + 'px',
+        }"
+      >
+        <PulseWidgetControls :widget="w" />
+      </div>
+    </template>
+
+    <!-- Desktop sidebar + widget controls -->
+    <template v-if="!isMobile">
+      <PulseSidebar
+        :manifests="props.manifests"
+        @close="closePulse"
+        @open-library="showLibrary = true"
+      />
+    </template>
+
+    <!-- Mobile: desktop-only notice -->
+    <div v-else class="mobile-notice">
+      <button class="notice-close" @click="closePulse">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+      <svg class="notice-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0H3"
+        />
+      </svg>
+      <p class="notice-title">Desktop only</p>
+      <p class="notice-body">Dashboard editing is only available on desktop or tablet.</p>
     </div>
 
-    <!-- Widget editing controls — floated above each enabled widget -->
-    <div
-      v-for="w in editableWidgets"
-      :key="w.id"
-      class="widget-anchor"
-      :style="{
-        left:  w.position.x + 'px',
-        top:   (w.position.y < CONTROLS_H
-          ? w.position.y + (w.height ?? 48)
-          : w.position.y - CONTROLS_H) + 'px',
-        width: getWidgetWidth(w, w.size) + 'px',
-      }"
-    >
-      <PulseWidgetControls :widget="w" />
-    </div>
-
-    <!-- Sidebar -->
-    <PulseSidebar
-      :manifests="props.manifests"
-      @close="closePulse"
-      @open-library="showLibrary = true"
-    />
-
-    <!-- Widget library modal -->
     <WidgetLibraryModal
       v-if="showLibrary"
       :manifests="dashboardManifests"
@@ -95,10 +118,7 @@ const editableWidgets = computed(() =>
   pointer-events: none;
 }
 
-/* Everything inside is non-interactive by default except explicit children */
-.pulse-overlay > * {
-  pointer-events: auto;
-}
+.pulse-overlay > * { pointer-events: auto; }
 
 .pulse-backdrop {
   position: absolute;
@@ -107,6 +127,7 @@ const editableWidgets = computed(() =>
   pointer-events: none;
 }
 
+/* ── Desktop edit banner ── */
 .edit-banner {
   position: fixed;
   top: 14px;
@@ -135,6 +156,7 @@ const editableWidgets = computed(() =>
   background: rgba(130, 133, 255, 0.85);
   border-radius: 50%;
   animation: blink 1.6s ease-in-out infinite;
+  flex-shrink: 0;
 }
 
 @keyframes blink {
@@ -142,12 +164,75 @@ const editableWidgets = computed(() =>
   50%       { opacity: 0.3; }
 }
 
+/* ── Widget anchors ── */
 .widget-anchor {
   position: absolute;
   pointer-events: none;
 }
+.widget-anchor > * { pointer-events: auto; }
 
-.widget-anchor > * {
+/* ── Mobile desktop-only notice ── */
+.mobile-notice {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(320px, calc(100vw - 48px));
+  padding: 32px 24px 28px;
+  background: rgba(10, 10, 22, 0.96);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
   pointer-events: auto;
+  color: #fff;
+}
+
+.notice-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.notice-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.notice-icon {
+  width: 36px;
+  height: 36px;
+  color: rgba(130, 133, 255, 0.8);
+  margin-bottom: 4px;
+}
+
+.notice-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.notice-body {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+  line-height: 1.5;
 }
 </style>

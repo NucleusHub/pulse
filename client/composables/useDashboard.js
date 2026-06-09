@@ -40,6 +40,41 @@ const loading = ref(false)
 const error = ref(null)
 let initialized = false
 
+// Hoisted so resize handler and useDashboard() can both call it
+async function saveState() {
+  if (!state.value) return
+  try {
+    await fetch(PULSE_API, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ widgets: state.value.widgets }),
+    })
+  } catch (e) {
+    console.error('[Pulse] Failed to save state:', e)
+  }
+}
+
+// Clamp all widget positions to the current viewport on resize so nothing
+// drifts off-screen when the window shrinks.
+let _clampTimer = null
+function clampToViewport() {
+  if (!state.value) return
+  const vw = window.innerWidth
+  const vh = window.innerHeight
+  for (const w of state.value.widgets) {
+    if (!w.position) continue
+    const ww = getWidgetWidth(w, w.size)
+    w.position.x = Math.max(0, Math.min(w.position.x, vw - ww))
+    w.position.y = Math.max(0, Math.min(w.position.y, vh - 60))
+  }
+  clearTimeout(_clampTimer)
+  _clampTimer = setTimeout(saveState, 1200)
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('resize', clampToViewport)
+}
+
 export function useDashboard() {
   async function fetchState() {
     if (initialized) return
@@ -53,19 +88,6 @@ export function useDashboard() {
       state.value = { userId: 'default', widgets: [] }
     } finally {
       loading.value = false
-    }
-  }
-
-  async function saveState() {
-    if (!state.value) return
-    try {
-      await fetch(PULSE_API, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ widgets: state.value.widgets }),
-      })
-    } catch (e) {
-      console.error('[Pulse] Failed to save state:', e)
     }
   }
 
