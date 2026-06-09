@@ -1,0 +1,14 @@
+{
+  "id": "pulse",
+  "name": "Pulse",
+  "description": "Widget & dashboard management",
+  "hub": {
+    "showInSidebar": false,
+    "showOnDashboard": false
+  },
+  "nginx": {
+    "routes": [
+      { "path": "/api/pulse", "upstream": "pulse-server:3004" }
+    ]
+  }
+}

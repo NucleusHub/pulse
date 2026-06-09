@@ -1,0 +1,266 @@
+<script setup>
+import { computed } from 'vue'
+import { useDashboard } from '../composables/useDashboard.js'
+
+const props = defineProps({
+  manifests: { type: Array, default: () => [] },
+})
+
+defineEmits(['close', 'open-library'])
+
+const { widgets: states, getWidgetState, saveState } = useDashboard()
+
+const mergedWidgets = computed(() =>
+  props.manifests.map(m => {
+    const s = states.value.find(s => s.id === m.id)
+    return s ? { ...m, ...s } : { ...m, enabled: m.enabled !== false, locked: !!m.locked }
+  })
+)
+
+function enableWidget(id) {
+  const ws = getWidgetState(id)
+  if (ws) ws.enabled = true
+  saveState()
+}
+
+function disableWidget(id) {
+  const ws = getWidgetState(id)
+  if (ws) ws.enabled = false
+  saveState()
+}
+</script>
+
+<template>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">
+        <span class="pulse-glyph">◈</span>
+        Pulse
+      </div>
+      <button class="icon-btn" title="Close Pulse" @click="$emit('close')">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <p class="hint">Drag widgets to reposition. Click + Add Widget to install more.</p>
+
+    <div class="section-label">Installed Widgets</div>
+
+    <ul class="widget-list">
+      <li
+        v-for="w in mergedWidgets"
+        :key="w.id"
+        class="widget-item"
+        :class="{ 'is-disabled': !w.enabled }"
+      >
+        <div class="widget-meta">
+          <span class="widget-name">{{ w.name }}</span>
+          <span v-if="w.locked" class="system-badge">🔒 System</span>
+        </div>
+        <div v-if="!w.locked" class="widget-actions">
+          <button v-if="!w.enabled" class="toggle-btn enable" @click="enableWidget(w.id)">Enable</button>
+          <button v-else class="toggle-btn disable" @click="disableWidget(w.id)">Disable</button>
+        </div>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <button class="add-btn" @click="$emit('open-library')">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" d="M12 4v16m-8-8h16"/>
+        </svg>
+        Add Widget
+      </button>
+    </div>
+  </aside>
+</template>
+
+<style scoped>
+.sidebar {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  bottom: 16px;
+  width: 220px;
+  background: rgba(10, 10, 22, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #fff;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 12px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  flex-shrink: 0;
+}
+
+.sidebar-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.pulse-glyph {
+  color: rgba(99, 102, 241, 0.9);
+  font-size: 17px;
+}
+
+.icon-btn {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  color: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  transition: background 0.13s, color 0.13s;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.hint {
+  padding: 8px 12px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.section-label {
+  padding: 10px 12px 5px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+}
+
+.widget-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 6px;
+  list-style: none;
+  margin: 0;
+}
+
+.widget-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 8px;
+  transition: background 0.12s;
+}
+
+.widget-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.widget-item.is-disabled .widget-name {
+  opacity: 0.35;
+}
+
+.widget-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.widget-name {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.system-badge {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.widget-actions { flex-shrink: 0; }
+
+.toggle-btn {
+  padding: 3px 9px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+
+.toggle-btn.enable {
+  background: rgba(99, 102, 241, 0.2);
+  color: rgba(130, 133, 255, 0.95);
+}
+
+.toggle-btn.enable:hover {
+  background: rgba(99, 102, 241, 0.38);
+}
+
+.toggle-btn.disable {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.toggle-btn.disable:hover {
+  background: rgba(239, 68, 68, 0.18);
+  color: rgba(239, 68, 68, 0.85);
+}
+
+.sidebar-footer {
+  padding: 8px 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  flex-shrink: 0;
+}
+
+.add-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(130, 133, 255, 0.9);
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  cursor: pointer;
+  transition: background 0.13s, border-color 0.13s;
+}
+
+.add-btn:hover {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.32);
+}
+</style>
