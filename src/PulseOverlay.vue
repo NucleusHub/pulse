@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { usePulse } from './composables/usePulse.js'
 import { useDashboard, SIZE_DIMS } from './composables/useDashboard.js'
 import PulseSidebar from './components/PulseSidebar.vue'
@@ -12,6 +12,10 @@ const props = defineProps({
 
 const { closePulse } = usePulse()
 const { widgets: states } = useDashboard()
+
+function onKeydown(e) { if (e.key === 'Escape') closePulse() }
+onMounted(() => window.addEventListener('keydown', onKeydown))
+onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
 const showLibrary = ref(false)
 

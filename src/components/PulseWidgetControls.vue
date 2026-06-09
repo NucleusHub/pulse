@@ -119,11 +119,7 @@ function disableWidget() {
       <div class="divider" />
 
       <!-- Disable -->
-      <button class="ctrl-btn danger" title="Disable widget" @click="disableWidget">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
+      <button class="ctrl-btn disable-btn" @click="disableWidget">Disable</button>
     </div>
   </div>
 </template>
@@ -191,9 +187,17 @@ function disableWidget() {
   color: rgba(251, 191, 36, 0.85);
 }
 
-.danger:hover {
-  background: rgba(239, 68, 68, 0.2);
-  color: rgba(239, 68, 68, 0.9);
+.disable-btn {
+  width: auto;
+  padding: 0 9px;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.disable-btn:hover {
+  background: rgba(239, 68, 68, 0.18);
+  color: rgba(239, 68, 68, 0.85);
 }
 
 .divider {

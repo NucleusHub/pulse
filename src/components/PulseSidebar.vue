@@ -10,12 +10,23 @@ defineEmits(['close', 'open-library'])
 
 const { widgets: states, getWidgetState, saveState } = useDashboard()
 
-const mergedWidgets = computed(() =>
+const allMerged = computed(() =>
   props.manifests.map(m => {
     const s = states.value.find(s => s.id === m.id)
     return s ? { ...m, ...s } : { ...m, enabled: m.enabled !== false, locked: !!m.locked }
   })
 )
+
+// Widgets the user can manage (not locked, not system-slot)
+const userWidgets = computed(() =>
+  allMerged.value.filter(w => !w.locked && w.slot !== 'system')
+)
+
+// Locked / system items — manifest-based ones plus the static Hub Interface entry
+const systemWidgets = computed(() => [
+  ...allMerged.value.filter(w => w.locked || w.slot === 'system'),
+  { id: 'hub-ui', name: 'Hub Interface', description: 'Theme toggle and Pulse button', locked: true, enabled: true },
+])
 
 function enableWidget(id) {
   const ws = getWidgetState(id)
@@ -50,18 +61,34 @@ function disableWidget(id) {
 
     <ul class="widget-list">
       <li
-        v-for="w in mergedWidgets"
+        v-for="w in userWidgets"
         :key="w.id"
         class="widget-item"
         :class="{ 'is-disabled': !w.enabled }"
       >
         <div class="widget-meta">
           <span class="widget-name">{{ w.name }}</span>
-          <span v-if="w.locked" class="system-badge">🔒 System</span>
         </div>
-        <div v-if="!w.locked" class="widget-actions">
+        <div class="widget-actions">
           <button v-if="!w.enabled" class="toggle-btn enable" @click="enableWidget(w.id)">Enable</button>
           <button v-else class="toggle-btn disable" @click="disableWidget(w.id)">Disable</button>
+        </div>
+      </li>
+
+      <li v-if="userWidgets.length === 0" class="empty-hint">No widgets installed.</li>
+    </ul>
+
+    <div class="section-label system-section-label">System</div>
+
+    <ul class="widget-list">
+      <li
+        v-for="w in systemWidgets"
+        :key="w.id"
+        class="widget-item system-item"
+      >
+        <div class="widget-meta">
+          <span class="widget-name">{{ w.name }}</span>
+          <span class="system-badge">🔒 Required</span>
         </div>
       </li>
     </ul>
@@ -159,11 +186,34 @@ function disableWidget(id) {
 }
 
 .widget-list {
-  flex: 1;
   overflow-y: auto;
   padding: 0 6px;
   list-style: none;
   margin: 0;
+}
+
+.widget-list:first-of-type {
+  flex: 1;
+}
+
+.system-section-label {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 4px;
+}
+
+.system-item {
+  opacity: 0.6;
+}
+
+.system-item:hover {
+  background: transparent;
+  opacity: 0.7;
+}
+
+.empty-hint {
+  padding: 8px 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.25);
 }
 
 .widget-item {
