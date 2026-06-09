@@ -14,6 +14,7 @@ export const HUB_MANIFESTS = [
     sizes: ['small', 'large'],
     defaultSize: 'small',
     sizeDims: { small: 114, large: 210 },
+    height: 46,
   },
   {
     id: 'hub-apps',
@@ -22,6 +23,7 @@ export const HUB_MANIFESTS = [
     sizes: ['small', 'medium', 'large'],
     defaultSize: 'medium',
     sizeDims: { small: 280, medium: 340, large: 420 },
+    overlayControls: false,
   },
 ]
 

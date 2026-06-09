@@ -27,9 +27,11 @@ const dashboardManifests = computed(() =>
   props.manifests.filter(m => m.slot !== 'system')
 )
 
-// Merge manifest metadata with live dashboard state for enabled widgets
+// Merge manifest metadata with live dashboard state for enabled widgets.
+// Skip widgets with overlayControls:false — they render their own inline Pulse controls.
 const editableWidgets = computed(() =>
   dashboardManifests.value
+    .filter(m => m.overlayControls !== false)
     .map(m => {
       const s = states.value.find(s => s.id === m.id)
       return s
@@ -60,7 +62,9 @@ const editableWidgets = computed(() =>
       class="widget-anchor"
       :style="{
         left:  w.position.x + 'px',
-        top:   (w.position.y - CONTROLS_H) + 'px',
+        top:   (w.position.y < CONTROLS_H
+          ? w.position.y + (w.height ?? 48)
+          : w.position.y - CONTROLS_H) + 'px',
         width: getWidgetWidth(w, w.size) + 'px',
       }"
     >
