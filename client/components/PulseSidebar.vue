@@ -18,14 +18,12 @@ const allMerged = computed(() =>
   })
 )
 
-// Widgets the user can manage (not locked, not any system slot)
 const userWidgets = computed(() =>
-  allMerged.value.filter(w => !w.locked && w.slot !== 'system' && w.slot !== 'system-hub')
+  allMerged.value.filter(w => w.slot !== 'system' && w.slot !== 'system-hub')
 )
 
-// System items: fully-locked (core) + hub UI widgets (movable but not disableable)
 const systemWidgets = computed(() =>
-  allMerged.value.filter(w => w.locked || w.slot === 'system' || w.slot === 'system-hub')
+  allMerged.value.filter(w => w.slot === 'system' || w.slot === 'system-hub')
 )
 
 function enableWidget(id) {
