@@ -13,8 +13,9 @@ const props = defineProps({
 const { closePulse } = usePulse()
 const { widgets: states } = useDashboard()
 
-const isMobile    = ref(typeof window !== 'undefined' ? window.innerWidth < 768 : false)
-const showLibrary = ref(false)
+const isMobile        = ref(typeof window !== 'undefined' ? window.innerWidth < 768 : false)
+const showLibrary     = ref(false)
+const sidebarCollapsed = ref(false)
 
 const CONTROLS_H = 34
 
@@ -81,9 +82,22 @@ function anchorTop(w) {
     <template v-if="!isMobile">
       <PulseSidebar
         :manifests="props.manifests"
+        :collapsed="sidebarCollapsed"
         @close="closePulse"
         @open-library="showLibrary = true"
+        @collapse="sidebarCollapsed = true"
       />
+      <Transition name="tab-slide">
+        <button v-if="sidebarCollapsed"
+          class="sidebar-restore-tab"
+          title="Show sidebar"
+          @click="sidebarCollapsed = false">
+          <span class="restore-glyph">◈</span>
+          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+          </svg>
+        </button>
+      </Transition>
     </template>
 
     <!-- Mobile: desktop-only notice -->
@@ -163,6 +177,45 @@ function anchorTop(w) {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.3; }
 }
+
+/* ── Sidebar restore tab ── */
+.sidebar-restore-tab {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 32px;
+  padding: 14px 0;
+  background: rgba(10, 10, 22, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: rgba(130, 133, 255, 0.7);
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition: color 0.13s, background 0.13s;
+}
+
+.sidebar-restore-tab:hover {
+  background: rgba(20, 20, 45, 0.96);
+  color: rgba(130, 133, 255, 1);
+}
+
+.restore-glyph {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.tab-slide-enter-active,
+.tab-slide-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
+.tab-slide-enter-from,
+.tab-slide-leave-to { opacity: 0; transform: translateY(-50%) translateX(-12px); }
 
 /* ── Widget anchors ── */
 .widget-anchor {

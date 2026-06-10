@@ -8,6 +8,15 @@ export const SIZE_DIMS = { small: 280, medium: 360, large: 480 }
 // Hub UI pseudo-widgets — movable + resizable but not disableable
 export const HUB_MANIFESTS = [
   {
+    id: 'hub-account',
+    name: 'Account',
+    slot: 'system-hub',
+    sizes: ['small', 'large'],
+    defaultSize: 'small',
+    sizeDims: { small: 40, large: 220 },
+    height: 40,
+  },
+  {
     id: 'hub-theme',
     name: 'Theme Changer',
     slot: 'system-hub',
@@ -117,6 +126,7 @@ export function useDashboard() {
     const vw = typeof window !== 'undefined' ? window.innerWidth  : 1280
     const vh = typeof window !== 'undefined' ? window.innerHeight : 768
 
+    if (m.id === 'hub-account') return { x: 16, y: 16 }
     if (m.id === 'hub-theme') {
       const w = m.sizeDims?.small ?? 114
       return { x: Math.max(0, vw - w - 16), y: 16 }

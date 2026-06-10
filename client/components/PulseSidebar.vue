@@ -5,9 +5,10 @@ import { useDashboard } from '../composables/useDashboard.js'
 const props = defineProps({
   manifests: { type: Array, default: () => [] },
   inline: { type: Boolean, default: false },
+  collapsed: { type: Boolean, default: false },
 })
 
-defineEmits(['close', 'open-library'])
+defineEmits(['close', 'open-library', 'collapse'])
 
 const { widgets: states, getWidgetState, saveState } = useDashboard()
 
@@ -40,17 +41,24 @@ function disableWidget(id) {
 </script>
 
 <template>
-  <aside class="sidebar" :class="{ 'is-inline': inline }">
+  <aside class="sidebar" :class="{ 'is-inline': inline, 'is-collapsed': collapsed && !inline }">
     <div class="sidebar-header">
       <div class="sidebar-title">
         <span class="pulse-glyph">◈</span>
         Pulse
       </div>
-      <button v-if="!inline" class="icon-btn" title="Close Pulse" @click="$emit('close')">
-        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
+      <div v-if="!inline" style="display:flex;gap:4px">
+        <button class="icon-btn" title="Hide sidebar" @click="$emit('collapse')">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
+          </svg>
+        </button>
+        <button class="icon-btn" title="Close Pulse" @click="$emit('close')">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
     </div>
 
     <p class="hint">Drag widgets to reposition. Click + Add Widget to install more.</p>
@@ -119,6 +127,11 @@ function disableWidget(id) {
   overflow: hidden;
   color: #fff;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.is-collapsed {
+  transform: translateX(calc(-100% - 32px));
 }
 
 /* When rendered inside the mobile drawer — no absolute positioning, fills parent */

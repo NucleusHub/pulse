@@ -1,23 +1,25 @@
 import express from 'express'
 import Dashboard from '../models/Dashboard.js'
+import { requireAuth } from '../middleware/auth.js'
 
 const router = express.Router()
-const USER_ID = 'default'
 
-router.get('/', async (_, res) => {
+router.get('/', requireAuth, async (req, res) => {
   try {
-    const doc = await Dashboard.findOne({ userId: USER_ID }).lean()
-    res.json(doc ?? { userId: USER_ID, widgets: [] })
+    const userId = String(req.profile.profileId)
+    const doc = await Dashboard.findOne({ userId }).lean()
+    res.json(doc ?? { userId, widgets: [] })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
 })
 
-router.put('/', async (req, res) => {
+router.put('/', requireAuth, async (req, res) => {
   try {
+    const userId = String(req.profile.profileId)
     const { widgets } = req.body
     const doc = await Dashboard.findOneAndUpdate(
-      { userId: USER_ID },
+      { userId },
       { widgets },
       { upsert: true, new: true, runValidators: true }
     )
