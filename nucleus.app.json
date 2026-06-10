@@ -10,5 +10,14 @@
     "routes": [
       { "path": "/api/pulse", "upstream": "pulse-server:3004" }
     ]
+  },
+  "server": {
+    "service": "pulse-server",
+    "port": 3004,
+    "env": {
+      "MONGODB_URI": "mongodb://mongo:27017/nucleus"
+    },
+    "depends": ["mongo"],
+    "healthEndpoint": "/health"
   }
 }
