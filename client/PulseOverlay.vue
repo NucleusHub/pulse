@@ -36,7 +36,7 @@ const dashboardManifests = computed(() =>
 
 const editableWidgets = computed(() =>
   dashboardManifests.value
-    .filter(m => m.overlayControls !== false)
+    .filter(m => m.overlayControls !== false && m.slot !== 'nucleus')
     .map(m => {
       const s = states.value.find(s => s.id === m.id)
       return s

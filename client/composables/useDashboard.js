@@ -63,21 +63,35 @@ async function saveState() {
   }
 }
 
-// Clamp all widget positions to the current viewport on resize so nothing
-// drifts off-screen when the window shrinks.
+// Clamp widget positions to the viewport on resize so nothing drifts
+// off-screen. Important persistence rules:
+//   • Mobile uses an ephemeral layout — never clamp or persist from it, so the
+//     stored desktop positions are left untouched when viewed on a phone.
+//   • Locked widgets must NEVER have their position changed or re-saved.
+//   • Only persist when an unlocked widget actually moved.
+const MOBILE_BREAKPOINT = 768
 let _clampTimer = null
 function clampToViewport() {
   if (!state.value) return
+  if (window.innerWidth < MOBILE_BREAKPOINT) return
   const vw = window.innerWidth
   const vh = window.innerHeight
+  let moved = false
   for (const w of state.value.widgets) {
-    if (!w.position) continue
+    if (!w.position || w.locked) continue
     const ww = getWidgetWidth(w, w.size)
-    w.position.x = Math.max(0, Math.min(w.position.x, vw - ww))
-    w.position.y = Math.max(0, Math.min(w.position.y, vh - 60))
+    const nx = Math.max(0, Math.min(w.position.x, vw - ww))
+    const ny = Math.max(0, Math.min(w.position.y, vh - 60))
+    if (nx !== w.position.x || ny !== w.position.y) {
+      w.position.x = nx
+      w.position.y = ny
+      moved = true
+    }
   }
-  clearTimeout(_clampTimer)
-  _clampTimer = setTimeout(saveState, 1200)
+  if (moved) {
+    clearTimeout(_clampTimer)
+    _clampTimer = setTimeout(saveState, 1200)
+  }
 }
 
 if (typeof window !== 'undefined') {

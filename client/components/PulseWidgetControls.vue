@@ -1,10 +1,16 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useDashboard } from '../composables/useDashboard.js'
 
 const props = defineProps({
   widget: { type: Object, required: true },
 })
+
+const emit = defineEmits(['movestart'])
+
+// Nucleus widgets have no sizes — the bar shows a move handle, name + disable.
+// Their dragging is handled by the parent (force layout), via the movestart event.
+const minimal = computed(() => props.widget.slot === 'nucleus')
 
 const { getWidgetState, saveState, snapPosition } = useDashboard()
 
@@ -65,7 +71,40 @@ function disableWidget() {
 
 <template>
   <div class="controls-root" :class="{ dragging: isDragging }">
-    <div class="controls-bar">
+    <!-- Minimal bar for nucleus widgets: move handle + name + lock + disable -->
+    <div v-if="minimal" class="controls-bar">
+      <button
+        class="ctrl-btn drag-handle"
+        :class="{ 'is-locked': widget.locked }"
+        :title="widget.locked ? 'Unlock to move' : 'Drag to move'"
+        @mousedown="!widget.locked && emit('movestart', $event)"
+      >
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="9"  cy="5"  r="2"/><circle cx="15" cy="5"  r="2"/>
+          <circle cx="9"  cy="12" r="2"/><circle cx="15" cy="12" r="2"/>
+          <circle cx="9"  cy="19" r="2"/><circle cx="15" cy="19" r="2"/>
+        </svg>
+      </button>
+      <div class="divider" />
+      <span class="ctrl-name">{{ widget.name }}</span>
+      <div class="divider" />
+      <button
+        class="ctrl-btn"
+        :class="{ 'lock-active': widget.locked }"
+        :title="widget.locked ? 'Unlock position' : 'Lock position'"
+        @click="toggleLock"
+      >
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="5" y="11" width="14" height="10" rx="2"/>
+          <path v-if="widget.locked"  stroke-linecap="round" d="M8 11V7a4 4 0 0 1 8 0v4"/>
+          <path v-else stroke-linecap="round" stroke-dasharray="2 2" d="M8 11V7a4 4 0 0 1 8 0"/>
+        </svg>
+      </button>
+      <div class="divider" />
+      <button class="ctrl-btn disable-btn" @click="disableWidget">Disable</button>
+    </div>
+
+    <div v-else class="controls-bar">
       <!-- Drag handle -->
       <button
         class="ctrl-btn drag-handle"
@@ -186,6 +225,14 @@ function disableWidget() {
 
 .lock-active {
   color: rgba(251, 191, 36, 0.85);
+}
+
+.ctrl-name {
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
 }
 
 .disable-btn {
