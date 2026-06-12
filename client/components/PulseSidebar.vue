@@ -24,6 +24,9 @@ const allMerged = computed(() =>
 const userWidgets = computed(() =>
   allMerged.value.filter(w => w.slot !== 'system' && w.slot !== 'system-hub')
 )
+// Enabled widgets up top; disabled ones drop into their own section below.
+const enabledUserWidgets  = computed(() => userWidgets.value.filter(w => w.enabled))
+const disabledUserWidgets = computed(() => userWidgets.value.filter(w => !w.enabled))
 
 // Required widgets — can't be disabled, but can still be temp-hidden:
 // Core plus the hub's own UI (Account / Theme Changer / App Buttons). System
@@ -79,14 +82,14 @@ function toggleTempHide(id) {
 
     <ul class="widget-list">
       <li
-        v-for="w in userWidgets"
+        v-for="w in enabledUserWidgets"
         :key="w.id"
         class="widget-item"
-        :class="{ 'is-disabled': !w.enabled, 'is-temp-hidden': w.enabled && isTempHidden(w.id) }"
+        :class="{ 'is-temp-hidden': isTempHidden(w.id) }"
       >
         <div class="widget-meta">
           <span class="widget-name">{{ w.name }}</span>
-          <span v-if="w.enabled && isTempHidden(w.id)" class="temp-badge">Hidden this session</span>
+          <span v-if="isTempHidden(w.id)" class="temp-badge">Hidden this session</span>
         </div>
         <div class="widget-actions">
           <button
@@ -104,13 +107,32 @@ function toggleTempHide(id) {
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
             </svg>
           </button>
-          <button v-if="!w.enabled" class="toggle-btn enable" @click="enableWidget(w.id)">Enable</button>
-          <button v-else class="toggle-btn disable" @click="disableWidget(w.id)">Disable</button>
+          <button class="toggle-btn disable" @click="disableWidget(w.id)">Disable</button>
         </div>
       </li>
 
-      <li v-if="userWidgets.length === 0" class="empty-hint">No widgets installed.</li>
+      <li v-if="!userWidgets.length" class="empty-hint">No widgets installed.</li>
+      <li v-else-if="!enabledUserWidgets.length" class="empty-hint">No widgets enabled.</li>
     </ul>
+
+    <!-- Disabled widgets — parked below until re-enabled -->
+    <template v-if="disabledUserWidgets.length">
+      <div class="section-label divider-label">Disabled</div>
+      <ul class="widget-list">
+        <li
+          v-for="w in disabledUserWidgets"
+          :key="w.id"
+          class="widget-item is-disabled"
+        >
+          <div class="widget-meta">
+            <span class="widget-name">{{ w.name }}</span>
+          </div>
+          <div class="widget-actions">
+            <button class="toggle-btn enable" @click="enableWidget(w.id)">Enable</button>
+          </div>
+        </li>
+      </ul>
+    </template>
 
     <div class="section-label system-section-label">System</div>
 
@@ -271,7 +293,8 @@ function toggleTempHide(id) {
   flex: 1;
 }
 
-.system-section-label {
+.system-section-label,
+.divider-label {
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   margin-top: 4px;
 }
