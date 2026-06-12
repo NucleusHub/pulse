@@ -2,6 +2,11 @@ import { ref } from 'vue'
 
 const pulseActive = ref(false)
 
+// Id of the widget whose config modal is currently open (null = none). The
+// modal itself is rendered by the host app (the hub) since it resolves each
+// widget's Config.vue; Pulse just tracks which widget asked to be configured.
+const configWidgetId = ref(null)
+
 // Widgets hidden for the current Pulse session only. This is NOT "disable":
 // it never persists and is cleared the moment Pulse closes, so every widget
 // reappears once you leave edit mode. Purely to declutter a busy canvas while
@@ -15,6 +20,9 @@ function clearTempHidden() {
 export function usePulse() {
   return {
     pulseActive,
+    configWidgetId,
+    openConfig:  (id) => { configWidgetId.value = id },
+    closeConfig: () => { configWidgetId.value = null },
     tempHidden,
     tempHide(id) {
       tempHidden.value = new Set([...tempHidden.value, id])
@@ -26,10 +34,10 @@ export function usePulse() {
     },
     isTempHidden: (id) => tempHidden.value.has(id),
     openPulse:   () => { pulseActive.value = true },
-    closePulse:  () => { pulseActive.value = false; clearTempHidden() },
+    closePulse:  () => { pulseActive.value = false; clearTempHidden(); configWidgetId.value = null },
     togglePulse: () => {
       pulseActive.value = !pulseActive.value
-      if (!pulseActive.value) clearTempHidden()
+      if (!pulseActive.value) { clearTempHidden(); configWidgetId.value = null }
     },
   }
 }
