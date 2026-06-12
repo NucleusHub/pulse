@@ -12,7 +12,7 @@ const props = defineProps({
 defineEmits(['close', 'open-library', 'collapse'])
 
 const { widgets: states, getWidgetState, saveState } = useDashboard()
-const { isTempHidden, tempShow } = usePulse()
+const { isTempHidden, tempHide, tempShow } = usePulse()
 
 const allMerged = computed(() =>
   props.manifests.map(m => {
@@ -25,8 +25,11 @@ const userWidgets = computed(() =>
   allMerged.value.filter(w => w.slot !== 'system' && w.slot !== 'system-hub')
 )
 
+// Required widgets — can't be disabled, but can still be temp-hidden:
+// Core plus the hub's own UI (Account / Theme Changer / App Buttons). System
+// Info is the background data provider (no UI), so it's excluded from the list.
 const systemWidgets = computed(() =>
-  allMerged.value.filter(w => w.slot === 'system' || w.slot === 'system-hub')
+  allMerged.value.filter(w => (w.slot === 'system' || w.slot === 'system-hub') && w.id !== 'sysinfo')
 )
 
 function enableWidget(id) {
@@ -40,6 +43,18 @@ function disableWidget(id) {
   if (ws) ws.enabled = false
   saveState()
 }
+
+// Per-session hide: declutters the canvas while editing. Cleared when Pulse
+// closes, so widgets reappear automatically. Core has no UI and App Buttons
+// must always stay, so neither can be temp-hidden.
+const NO_TEMP_HIDE = new Set(['core', 'hub-apps'])
+function canTempHide(w) {
+  return w.enabled !== false && !NO_TEMP_HIDE.has(w.id)
+}
+function toggleTempHide(id) {
+  if (isTempHidden(id)) tempShow(id)
+  else tempHide(id)
+}
 </script>
 
 <template>
@@ -50,11 +65,6 @@ function disableWidget(id) {
         Pulse
       </div>
       <div v-if="!inline" style="display:flex;gap:4px">
-        <button class="icon-btn" title="Hide sidebar" @click="$emit('collapse')">
-          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
-          </svg>
-        </button>
         <button class="icon-btn" title="Close Pulse" @click="$emit('close')">
           <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/>
@@ -63,7 +73,7 @@ function disableWidget(id) {
       </div>
     </div>
 
-    <p class="hint">Drag widgets to reposition. Click + Add Widget to install more.</p>
+    <p class="hint">Drag widgets to reposition.<!-- Click + Add Widget to install more. --></p>
 
     <div class="section-label">Installed Widgets</div>
 
@@ -79,8 +89,22 @@ function disableWidget(id) {
           <span v-if="w.enabled && isTempHidden(w.id)" class="temp-badge">Hidden this session</span>
         </div>
         <div class="widget-actions">
+          <button
+            v-if="canTempHide(w)"
+            class="icon-toggle"
+            :class="{ active: isTempHidden(w.id) }"
+            :title="isTempHidden(w.id) ? 'Show widget' : 'Hide for this session'"
+            @click="toggleTempHide(w.id)"
+          >
+            <svg v-if="isTempHidden(w.id)" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.243 4.243L9.88 9.88" />
+            </svg>
+            <svg v-else width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </svg>
+          </button>
           <button v-if="!w.enabled" class="toggle-btn enable" @click="enableWidget(w.id)">Enable</button>
-          <button v-else-if="isTempHidden(w.id)" class="toggle-btn enable" @click="tempShow(w.id)">Show</button>
           <button v-else class="toggle-btn disable" @click="disableWidget(w.id)">Disable</button>
         </div>
       </li>
@@ -95,14 +119,36 @@ function disableWidget(id) {
         v-for="w in systemWidgets"
         :key="w.id"
         class="widget-item system-item"
+        :class="{ 'is-temp-hidden': isTempHidden(w.id) }"
       >
         <div class="widget-meta">
           <span class="widget-name">{{ w.name }}</span>
-          <span class="system-badge">🔒 Required</span>
+          <span v-if="isTempHidden(w.id)" class="temp-badge">Hidden this session</span>
+          <span v-else class="system-badge">🔒 Required</span>
+        </div>
+        <div class="widget-actions">
+          <button
+            v-if="canTempHide(w)"
+            class="icon-toggle"
+            :class="{ active: isTempHidden(w.id) }"
+            :title="isTempHidden(w.id) ? 'Show widget' : 'Hide for this session'"
+            @click="toggleTempHide(w.id)"
+          >
+            <svg v-if="isTempHidden(w.id)" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.243 4.243L9.88 9.88" />
+            </svg>
+            <svg v-else width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </svg>
+          </button>
         </div>
       </li>
+
+      <li v-if="systemWidgets.length === 0" class="empty-hint">No system widgets.</li>
     </ul>
 
+    <!-- Add Widget button hidden for now — uncomment to restore.
     <div class="sidebar-footer">
       <button class="add-btn" @click="$emit('open-library')">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -111,6 +157,7 @@ function disableWidget(id) {
         Add Widget
       </button>
     </div>
+    -->
   </aside>
 </template>
 
@@ -229,12 +276,7 @@ function disableWidget(id) {
   margin-top: 4px;
 }
 
-.system-item {
-  opacity: 0.6;
-}
-
-.system-item:hover {
-  background: transparent;
+.system-item .widget-name {
   opacity: 0.7;
 }
 
@@ -291,7 +333,30 @@ function disableWidget(id) {
   color: rgba(255, 255, 255, 0.3);
 }
 
-.widget-actions { flex-shrink: 0; }
+.widget-actions { flex-shrink: 0; display: flex; align-items: center; gap: 4px; }
+
+.icon-toggle {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.icon-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.icon-toggle.active {
+  color: rgba(130, 133, 255, 0.95);
+}
 
 .toggle-btn {
   padding: 3px 9px;

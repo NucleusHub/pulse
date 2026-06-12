@@ -98,6 +98,18 @@ function anchorTop(w) {
           </svg>
         </button>
       </Transition>
+
+      <!-- Collapse handle — a bump centered on the sidebar's right border -->
+      <Transition name="collapse-tab-fade">
+        <button v-if="!sidebarCollapsed"
+          class="sidebar-collapse-tab"
+          title="Hide sidebar"
+          @click="sidebarCollapsed = true">
+          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
+          </svg>
+        </button>
+      </Transition>
     </template>
 
     <!-- Mobile: desktop-only notice -->
@@ -216,6 +228,41 @@ function anchorTop(w) {
 .tab-slide-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
 .tab-slide-enter-from,
 .tab-slide-leave-to { opacity: 0; transform: translateY(-50%) translateX(-12px); }
+
+/* ── Collapse handle: a bump on the middle of the sidebar's right border ── */
+.sidebar-collapse-tab {
+  position: absolute;
+  /* sidebar: left 16px + width 220px → sits flush on its right border */
+  left: 236px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 52px;
+  padding: 0;
+  background: rgba(10, 10, 22, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: none;
+  border-radius: 0 9px 9px 0;
+  color: rgba(130, 133, 255, 0.7);
+  cursor: pointer;
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.35);
+  transition: color 0.13s, background 0.13s;
+}
+
+.sidebar-collapse-tab:hover {
+  background: rgba(20, 20, 45, 0.96);
+  color: rgba(130, 133, 255, 1);
+}
+
+.collapse-tab-fade-enter-active,
+.collapse-tab-fade-leave-active { transition: opacity 0.18s ease; }
+.collapse-tab-fade-enter-from,
+.collapse-tab-fade-leave-to { opacity: 0; }
 
 /* ── Widget anchors ── */
 .widget-anchor {
