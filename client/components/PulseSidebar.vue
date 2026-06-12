@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useDashboard } from '../composables/useDashboard.js'
+import { usePulse } from '../composables/usePulse.js'
 
 const props = defineProps({
   manifests: { type: Array, default: () => [] },
@@ -11,6 +12,7 @@ const props = defineProps({
 defineEmits(['close', 'open-library', 'collapse'])
 
 const { widgets: states, getWidgetState, saveState } = useDashboard()
+const { isTempHidden, tempShow } = usePulse()
 
 const allMerged = computed(() =>
   props.manifests.map(m => {
@@ -70,13 +72,15 @@ function disableWidget(id) {
         v-for="w in userWidgets"
         :key="w.id"
         class="widget-item"
-        :class="{ 'is-disabled': !w.enabled }"
+        :class="{ 'is-disabled': !w.enabled, 'is-temp-hidden': w.enabled && isTempHidden(w.id) }"
       >
         <div class="widget-meta">
           <span class="widget-name">{{ w.name }}</span>
+          <span v-if="w.enabled && isTempHidden(w.id)" class="temp-badge">Hidden this session</span>
         </div>
         <div class="widget-actions">
           <button v-if="!w.enabled" class="toggle-btn enable" @click="enableWidget(w.id)">Enable</button>
+          <button v-else-if="isTempHidden(w.id)" class="toggle-btn enable" @click="tempShow(w.id)">Show</button>
           <button v-else class="toggle-btn disable" @click="disableWidget(w.id)">Disable</button>
         </div>
       </li>
@@ -256,6 +260,15 @@ function disableWidget(id) {
 
 .widget-item.is-disabled .widget-name {
   opacity: 0.35;
+}
+
+.widget-item.is-temp-hidden .widget-name {
+  opacity: 0.5;
+}
+
+.temp-badge {
+  font-size: 10px;
+  color: rgba(130, 133, 255, 0.7);
 }
 
 .widget-meta {

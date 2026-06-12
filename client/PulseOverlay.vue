@@ -10,7 +10,7 @@ const props = defineProps({
   manifests: { type: Array, default: () => [] },
 })
 
-const { closePulse } = usePulse()
+const { closePulse, tempHidden } = usePulse()
 const { widgets: states } = useDashboard()
 
 const isMobile        = ref(typeof window !== 'undefined' ? window.innerWidth < 768 : false)
@@ -43,7 +43,7 @@ const editableWidgets = computed(() =>
         ? { ...m, ...s }
         : { ...m, enabled: m.enabled !== false, locked: !!m.locked, position: { x: 20, y: 20 }, size: m.defaultSize ?? 'medium', config: {} }
     })
-    .filter(w => w.enabled)
+    .filter(w => w.enabled && !tempHidden.value.has(w.id))
 )
 
 function anchorTop(w) {
