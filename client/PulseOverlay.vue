@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { usePulse } from './composables/usePulse.js'
 import { useDashboard, getWidgetWidth } from './composables/useDashboard.js'
+import { useAuth } from '@core/auth/useAuth.js'
 import PulseSidebar from './components/PulseSidebar.vue'
 import WidgetLibraryModal from './components/WidgetLibraryModal.vue'
 import PulseWidgetControls from './components/PulseWidgetControls.vue'
@@ -11,6 +12,8 @@ const props = defineProps({
 })
 
 const { closePulse, tempHidden } = usePulse()
+const { profile } = useAuth()
+const isAdmin = computed(() => profile.value?.role === 'admin')
 const { widgets: states } = useDashboard()
 
 const isMobile        = ref(typeof window !== 'undefined' ? window.innerWidth < 768 : false)
@@ -112,20 +115,30 @@ function anchorTop(w) {
       </Transition>
     </template>
 
-    <!-- Mobile: desktop-only notice -->
-    <div v-else class="mobile-notice">
-      <button class="notice-close" @click="closePulse">
-        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
+    <!-- Mobile: desktop-only notice. Admins still get the admin console here,
+         since it's the only Pulse feature usable on a phone. -->
+    <div v-else class="mobile-wrap">
+      <div class="mobile-notice">
+        <button class="notice-close" @click="closePulse">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        <svg class="notice-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0H3"
+          />
         </svg>
-      </button>
-      <svg class="notice-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0H3"
-        />
-      </svg>
-      <p class="notice-title">Desktop only</p>
-      <p class="notice-body">Dashboard editing is only available on desktop or tablet.</p>
+        <p class="notice-title">Desktop only</p>
+        <p class="notice-body">Dashboard editing is only available on desktop or tablet.</p>
+      </div>
+
+      <a v-if="isAdmin" class="mobile-admin-btn" href="/admin/">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V6l-9-4z" />
+        </svg>
+        Admin Console
+      </a>
     </div>
 
     <WidgetLibraryModal
@@ -272,12 +285,20 @@ function anchorTop(w) {
 .widget-anchor > * { pointer-events: auto; }
 
 /* ── Mobile desktop-only notice ── */
-.mobile-notice {
+.mobile-wrap {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: min(320px, calc(100vw - 48px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  pointer-events: auto;
+}
+.mobile-notice {
+  position: relative;
   padding: 32px 24px 28px;
   background: rgba(10, 10, 22, 0.96);
   backdrop-filter: blur(24px);
@@ -290,8 +311,29 @@ function anchorTop(w) {
   text-align: center;
   gap: 10px;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
-  pointer-events: auto;
   color: #fff;
+}
+.mobile-admin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 22px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  color: #fff;
+  background: rgba(10, 10, 22, 0.96);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(130, 133, 255, 0.4);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  transition: border-color 0.13s, background 0.13s;
+}
+.mobile-admin-btn svg { color: rgba(130, 133, 255, 0.95); }
+.mobile-admin-btn:active {
+  background: rgba(20, 20, 45, 0.98);
+  border-color: rgba(130, 133, 255, 0.7);
 }
 
 .notice-close {

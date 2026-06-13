@@ -2,6 +2,7 @@
   "id": "pulse",
   "name": "Pulse",
   "description": "Widget & dashboard management",
+  "icon": "icon.svg",
   "hub": {
     "showInSidebar": false,
     "showOnDashboard": false

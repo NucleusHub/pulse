@@ -2,6 +2,10 @@
 import { computed } from 'vue'
 import { useDashboard } from '../composables/useDashboard.js'
 import { usePulse } from '../composables/usePulse.js'
+import { useAuth } from '@core/auth/useAuth.js'
+
+const { profile } = useAuth()
+const isAdmin = computed(() => profile.value?.role === 'admin')
 
 const props = defineProps({
   manifests: { type: Array, default: () => [] },
@@ -180,6 +184,16 @@ function toggleTempHide(id) {
       </button>
     </div>
     -->
+
+    <!-- Admins get a shortcut into the admin console. -->
+    <div v-if="isAdmin" class="sidebar-footer">
+      <a class="admin-btn" href="/admin/">
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V6l-9-4z" />
+        </svg>
+        Admin Console
+      </a>
+    </div>
   </aside>
 </template>
 
@@ -437,5 +451,29 @@ function toggleTempHide(id) {
 .add-btn:hover {
   background: rgba(99, 102, 241, 0.2);
   border-color: rgba(99, 102, 241, 0.32);
+}
+
+.admin-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  transition: background 0.13s, border-color 0.13s, color 0.13s;
+}
+
+.admin-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
 }
 </style>
