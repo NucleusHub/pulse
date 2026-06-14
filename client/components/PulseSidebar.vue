@@ -185,7 +185,6 @@ function toggleTempHide(id) {
     </div>
     -->
 
-    <!-- Admins get a shortcut into the admin console. -->
     <div v-if="isAdmin" class="sidebar-footer">
       <a class="admin-btn" href="/admin/">
         <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
