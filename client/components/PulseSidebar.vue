@@ -3,9 +3,11 @@ import { computed } from 'vue'
 import { useDashboard } from '../composables/useDashboard.js'
 import { usePulse } from '../composables/usePulse.js'
 import { useAuth } from '@core/auth/useAuth.js'
+import { useTheme } from '@core/useTheme.js'
 
 const { profile } = useAuth()
 const isAdmin = computed(() => profile.value?.role === 'admin')
+const { isDark } = useTheme()
 
 const props = defineProps({
   manifests: { type: Array, default: () => [] },
@@ -65,7 +67,7 @@ function toggleTempHide(id) {
 </script>
 
 <template>
-  <aside class="sidebar" :class="{ 'is-inline': inline, 'is-collapsed': collapsed && !inline }">
+  <aside class="sidebar" :class="{ 'is-inline': inline, 'is-collapsed': collapsed && !inline, 'theme-light': !isDark }">
     <div class="sidebar-header">
       <div class="sidebar-title">
         <span class="pulse-glyph">◈</span>
@@ -203,6 +205,7 @@ function toggleTempHide(id) {
   top: 16px;
   bottom: 16px;
   width: 220px;
+  z-index: 20;   /* above widget toolbars so they never overlap the sidebar */
   background: rgba(10, 10, 22, 0.92);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -475,4 +478,31 @@ function toggleTempHide(id) {
   border-color: rgba(255, 255, 255, 0.2);
   color: #fff;
 }
+
+/* ── Light mode (theme-light class set from useTheme) ────────────────────── */
+.sidebar.theme-light:not(.is-inline) {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(15, 23, 42, 0.1);
+  color: #1e293b;
+  box-shadow: 0 8px 40px rgba(15, 23, 42, 0.15);
+}
+.sidebar.theme-light.is-inline { color: #1e293b; }
+.theme-light .sidebar-header { border-bottom-color: rgba(15, 23, 42, 0.08); }
+.theme-light .icon-btn { color: rgba(15, 23, 42, 0.4); }
+.theme-light .icon-btn:hover { background: rgba(15, 23, 42, 0.06); color: rgba(15, 23, 42, 0.85); }
+.theme-light .hint { color: rgba(15, 23, 42, 0.5); border-bottom-color: rgba(15, 23, 42, 0.08); }
+.theme-light .section-label { color: rgba(15, 23, 42, 0.4); }
+.theme-light .system-section-label,
+.theme-light .divider-label { border-top-color: rgba(15, 23, 42, 0.08); }
+.theme-light .empty-hint { color: rgba(15, 23, 42, 0.4); }
+.theme-light .widget-item:hover { background: rgba(15, 23, 42, 0.05); }
+.theme-light .system-badge { color: rgba(15, 23, 42, 0.4); }
+.theme-light .icon-toggle { color: rgba(15, 23, 42, 0.45); }
+.theme-light .icon-toggle:hover { background: rgba(15, 23, 42, 0.08); color: rgba(15, 23, 42, 0.9); }
+.theme-light .toggle-btn.disable { background: rgba(15, 23, 42, 0.06); color: rgba(15, 23, 42, 0.5); }
+.theme-light .sidebar-footer { border-top-color: rgba(15, 23, 42, 0.08); }
+.theme-light .add-btn { color: #4f46e5; background: rgba(99, 102, 241, 0.1); border-color: rgba(99, 102, 241, 0.25); }
+.theme-light .add-btn:hover { background: rgba(99, 102, 241, 0.18); border-color: rgba(99, 102, 241, 0.4); }
+.theme-light .admin-btn { color: rgba(30, 41, 59, 0.8); background: rgba(15, 23, 42, 0.05); border-color: rgba(15, 23, 42, 0.12); }
+.theme-light .admin-btn:hover { background: rgba(15, 23, 42, 0.09); border-color: rgba(15, 23, 42, 0.2); color: #0f172a; }
 </style>

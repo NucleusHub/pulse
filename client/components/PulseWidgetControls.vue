@@ -2,6 +2,9 @@
 import { ref, computed } from 'vue'
 import { useDashboard } from '../composables/useDashboard.js'
 import { usePulse } from '../composables/usePulse.js'
+import { useTheme } from '@core/useTheme.js'
+
+const { isDark } = useTheme()
 
 const props = defineProps({
   widget: { type: Object, required: true },
@@ -9,7 +12,7 @@ const props = defineProps({
 
 const emit = defineEmits(['movestart'])
 
-const { openConfig } = usePulse()
+const { openConfig, tempHide } = usePulse()
 
 // Nucleus widgets have no sizes — the bar shows a move handle, name + disable.
 // Their dragging is handled by the parent (force layout), via the movestart event.
@@ -73,7 +76,7 @@ function disableWidget() {
 </script>
 
 <template>
-  <div class="controls-root" :class="{ dragging: isDragging }">
+  <div class="controls-root" :class="{ dragging: isDragging, 'theme-light': !isDark }">
     <!-- Minimal bar for nucleus widgets: move handle + name + lock + disable -->
     <div v-if="minimal" class="controls-bar">
       <button
@@ -164,12 +167,20 @@ function disableWidget() {
         <button class="ctrl-btn disable-btn" @click="disableWidget">Disable</button>
       </template>
     </div>
+
+    <!-- Temp-hide handle on the toolbar's top-right corner -->
+    <button class="hide-corner-btn" title="Hide for now" @click.stop="tempHide(widget.id)">
+      <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.243 4.243L9.88 9.88" />
+      </svg>
+    </button>
   </div>
 </template>
 
 <style scoped>
 .controls-root {
   position: relative;
+  width: fit-content;   /* shrink to the bar so the hide handle sits on its corner */
 }
 
 .controls-root.dragging {
@@ -257,5 +268,56 @@ function disableWidget() {
   background: rgba(255, 255, 255, 0.1);
   margin: 0 2px;
   flex-shrink: 0;
+}
+
+/* ── Light mode (theme-light class set from useTheme) ────────────────────── */
+.theme-light .controls-bar {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(15, 23, 42, 0.12);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.15);
+}
+.theme-light .ctrl-btn { color: rgba(15, 23, 42, 0.5); }
+.theme-light .ctrl-btn:hover { background: rgba(15, 23, 42, 0.08); color: rgba(15, 23, 42, 0.9); }
+.theme-light .ctrl-name { color: rgba(15, 23, 42, 0.85); }
+.theme-light .disable-btn { color: rgba(15, 23, 42, 0.45); }
+.theme-light .disable-btn:hover { background: rgba(239, 68, 68, 0.15); color: rgba(220, 38, 38, 0.95); }
+.theme-light .divider { background: rgba(15, 23, 42, 0.12); }
+/* Keep the active lock gold in light mode (otherwise the ctrl-btn rule greys it) */
+.theme-light .ctrl-btn.lock-active { color: rgba(202, 138, 4, 1); }
+
+/* Temp-hide handle on the toolbar corner */
+.hide-corner-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(35%, -35%);
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(10, 10, 22, 0.95);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  transition: background 0.12s, color 0.12s, transform 0.12s;
+  z-index: 1;
+}
+.hide-corner-btn:hover {
+  background: rgba(20, 20, 45, 0.98);
+  color: #fff;
+  transform: translate(35%, -35%) scale(1.1);
+}
+.theme-light .hide-corner-btn {
+  background: rgba(255, 255, 255, 0.97);
+  border-color: rgba(15, 23, 42, 0.12);
+  color: rgba(15, 23, 42, 0.6);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+}
+.theme-light .hide-corner-btn:hover {
+  background: #fff;
+  color: rgba(15, 23, 42, 0.9);
 }
 </style>

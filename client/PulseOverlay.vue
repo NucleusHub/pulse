@@ -1,8 +1,9 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { usePulse } from './composables/usePulse.js'
 import { useDashboard, getWidgetWidth } from './composables/useDashboard.js'
 import { useAuth } from '@core/auth/useAuth.js'
+import { useTheme } from '@core/useTheme.js'
 import PulseSidebar from './components/PulseSidebar.vue'
 import WidgetLibraryModal from './components/WidgetLibraryModal.vue'
 import PulseWidgetControls from './components/PulseWidgetControls.vue'
@@ -13,6 +14,7 @@ const props = defineProps({
 
 const { closePulse, tempHidden } = usePulse()
 const { profile } = useAuth()
+const { isDark } = useTheme()
 const isAdmin = computed(() => profile.value?.role === 'admin')
 const { widgets: states } = useDashboard()
 
@@ -20,13 +22,15 @@ const isMobile        = ref(typeof window !== 'undefined' ? window.innerWidth < 
 const showLibrary     = ref(false)
 const sidebarCollapsed = ref(false)
 
-const CONTROLS_H = 34
+const CONTROLS_H = 34   // approx toolbar height
+const TOOLBAR_GAP = 8   // breathing room between the toolbar and its widget
 
 function onKeydown(e) { if (e.key === 'Escape') closePulse() }
-function onResize()   { isMobile.value = window.innerWidth < 768 }
+function onResize()   { isMobile.value = window.innerWidth < 768; nextTick(measureHeights) }
 onMounted(() => {
   window.addEventListener('keydown', onKeydown)
   window.addEventListener('resize', onResize)
+  nextTick(measureHeights)
 })
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeydown)
@@ -49,16 +53,40 @@ const editableWidgets = computed(() =>
     .filter(w => w.enabled && !tempHidden.value.has(w.id))
 )
 
+// Actual rendered heights of the widgets (measured from the DOM), so the
+// "below" placement lands under widgets that grow/shrink with size changes
+// (e.g. the account widget: small avatar vs. tall large card).
+const heights = ref({})
+function measureHeights() {
+  const next = {}
+  for (const w of editableWidgets.value) {
+    const el = document.querySelector(`[data-pulse-id="${w.id}"]`)
+    if (el) next[w.id] = el.offsetHeight
+  }
+  heights.value = next
+}
+// Re-measure whenever the set of widgets or any of their sizes change.
+watch(
+  () => editableWidgets.value.map(w => `${w.id}:${w.size}`).join(','),
+  () => nextTick(measureHeights),
+  { immediate: true },
+)
+
 function anchorTop(w) {
-  return (w.position.y < CONTROLS_H
-    ? w.position.y + (w.height ?? 48)
-    : w.position.y - CONTROLS_H) + 'px'
+  // Float the toolbar a gap above the widget; if there isn't room above
+  // (widget near the top of the viewport), drop it below the widget instead,
+  // using the measured height so it clears widgets of any size.
+  const aboveTop = w.position.y - TOOLBAR_GAP - CONTROLS_H
+  if (aboveTop >= 4) return aboveTop + 'px'
+  const h = heights.value[w.id] ?? w.height ?? 48
+  return (w.position.y + h + TOOLBAR_GAP) + 'px'
 }
 </script>
 
 <template>
-  <div class="pulse-overlay">
-    <div class="pulse-backdrop" />
+  <div class="pulse-overlay" :class="{ 'theme-light': !isDark }">
+    <!-- Dimming lives in HomeView (below the widget canvas) so the widgets you're
+         editing stay bright; this overlay only holds the bright edit chrome. -->
 
     <!-- Desktop-only elements: edit banner + widget controls -->
     <template v-if="!isMobile">
@@ -159,13 +187,6 @@ function anchorTop(w) {
 
 .pulse-overlay > * { pointer-events: auto; }
 
-.pulse-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 8, 0.22);
-  pointer-events: none;
-}
-
 /* ── Desktop edit banner ── */
 .edit-banner {
   position: fixed;
@@ -206,6 +227,7 @@ function anchorTop(w) {
 /* ── Sidebar restore tab ── */
 .sidebar-restore-tab {
   position: absolute;
+  z-index: 20;
   left: 16px;
   top: 50%;
   transform: translateY(-50%);
@@ -245,6 +267,7 @@ function anchorTop(w) {
 /* ── Collapse handle: a bump on the middle of the sidebar's right border ── */
 .sidebar-collapse-tab {
   position: absolute;
+  z-index: 20;
   /* sidebar: left 16px + width 220px → sits flush on its right border */
   left: 236px;
   top: 50%;
@@ -376,5 +399,20 @@ function anchorTop(w) {
   color: rgba(255, 255, 255, 0.5);
   margin: 0;
   line-height: 1.5;
+}
+
+/* ── Light mode (theme-light class set from useTheme) ────────────────────── */
+.theme-light .sidebar-restore-tab,
+.theme-light .sidebar-collapse-tab {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(15, 23, 42, 0.1);
+  color: rgba(79, 70, 229, 0.85);
+}
+.theme-light .sidebar-restore-tab { box-shadow: 0 4px 20px rgba(15, 23, 42, 0.15); }
+.theme-light .sidebar-collapse-tab { box-shadow: 4px 0 16px rgba(15, 23, 42, 0.12); }
+.theme-light .sidebar-restore-tab:hover,
+.theme-light .sidebar-collapse-tab:hover {
+  background: rgba(255, 255, 255, 0.99);
+  color: rgba(79, 70, 229, 1);
 }
 </style>
