@@ -204,7 +204,6 @@ function anchorTop(w) {
   font-weight: 600;
   color: rgba(130, 133, 255, 0.95);
   backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   white-space: nowrap;
   pointer-events: none;
   box-shadow: 0 2px 12px rgba(99, 102, 241, 0.15);
@@ -240,7 +239,6 @@ function anchorTop(w) {
   padding: 14px 0;
   background: rgba(10, 10, 22, 0.92);
   backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   color: rgba(130, 133, 255, 0.7);
@@ -280,7 +278,6 @@ function anchorTop(w) {
   padding: 0;
   background: rgba(10, 10, 22, 0.92);
   backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-left: none;
   border-radius: 0 9px 9px 0;
@@ -325,7 +322,6 @@ function anchorTop(w) {
   padding: 32px 24px 28px;
   background: rgba(10, 10, 22, 0.96);
   backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   display: flex;
@@ -348,7 +344,6 @@ function anchorTop(w) {
   color: #fff;
   background: rgba(10, 10, 22, 0.96);
   backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(130, 133, 255, 0.4);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
   transition: border-color 0.13s, background 0.13s;

@@ -195,7 +195,6 @@ function disableWidget() {
   padding: 4px 6px;
   background: rgba(10, 10, 22, 0.88);
   backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 10px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.4);

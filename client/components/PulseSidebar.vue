@@ -208,7 +208,6 @@ function toggleTempHide(id) {
   z-index: 20;   /* above widget toolbars so they never overlap the sidebar */
   background: rgba(10, 10, 22, 0.92);
   backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   display: flex;
@@ -232,7 +231,6 @@ function toggleTempHide(id) {
   border: none;
   box-shadow: none;
   backdrop-filter: none;
-  -webkit-backdrop-filter: none;
   background: transparent;
 }
 
