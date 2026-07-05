@@ -2,6 +2,11 @@
   "id": "pulse",
   "name": "Pulse",
   "description": "Widget & dashboard management",
+  "version": "0.1.0",
+  "manifestVersion": 1,
+  "compatibility": {
+    "nucleus": ">=0.1.0 <1.0.0"
+  },
   "icon": "icon.svg",
   "hub": {
     "showInSidebar": false,

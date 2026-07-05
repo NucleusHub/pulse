@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useDashboard } from '../composables/useDashboard.js'
+import { formatVersion } from '@core/version.js'
 
 const props = defineProps({
   manifests: { type: Array, default: () => [] },
@@ -51,7 +52,10 @@ function addWidget(manifest) {
       <div class="widget-list">
         <div v-for="w in libraryWidgets" :key="w.id" class="widget-card">
           <div class="widget-info">
-            <p class="widget-name">{{ w.name }}</p>
+            <div class="widget-name-row">
+              <p class="widget-name">{{ w.name }}</p>
+              <span v-if="w.version" class="widget-version">{{ formatVersion(w.version) }}</span>
+            </div>
             <p class="widget-desc">{{ w.description }}</p>
           </div>
           <button v-if="!w.isEnabled" class="add-btn" @click="addWidget(w); $emit('close')">Add</button>
@@ -154,10 +158,28 @@ function addWidget(manifest) {
   background: rgba(255, 255, 255, 0.07);
 }
 
+.widget-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 2px;
+}
+
 .widget-name {
   font-size: 14px;
   font-weight: 600;
-  margin: 0 0 2px;
+  margin: 0;
+}
+
+.widget-version {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
 }
 
 .widget-desc {
