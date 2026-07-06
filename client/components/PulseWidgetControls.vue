@@ -3,8 +3,10 @@ import { ref, computed } from 'vue'
 import { useDashboard } from '../composables/useDashboard.js'
 import { usePulse } from '../composables/usePulse.js'
 import { useTheme } from '@core/useTheme.js'
+import { useI18n } from '@core/useI18n.js'
 
 const { isDark } = useTheme()
+const { t } = useI18n()
 
 const props = defineProps({
   widget: { type: Object, required: true },
@@ -82,7 +84,7 @@ function disableWidget() {
       <button
         class="ctrl-btn drag-handle"
         :class="{ 'is-locked': widget.locked }"
-        :title="widget.locked ? 'Unlock to move' : 'Drag to move'"
+        :title="widget.locked ? t('hub.pulse.unlockToMove') : t('hub.pulse.dragToMove')"
         @mousedown="!widget.locked && emit('movestart', $event)"
       >
         <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
@@ -97,7 +99,7 @@ function disableWidget() {
       <button
         class="ctrl-btn"
         :class="{ 'lock-active': widget.locked }"
-        :title="widget.locked ? 'Unlock position' : 'Lock position'"
+        :title="widget.locked ? t('hub.pulse.unlockPosition') : t('hub.pulse.lockPosition')"
         @click="toggleLock"
       >
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -107,7 +109,7 @@ function disableWidget() {
         </svg>
       </button>
       <div class="divider" />
-      <button class="ctrl-btn disable-btn" @click="disableWidget">Disable</button>
+      <button class="ctrl-btn disable-btn" @click="disableWidget">{{ t('hub.pulse.disable') }}</button>
     </div>
 
     <div v-else class="controls-bar">
@@ -115,7 +117,7 @@ function disableWidget() {
       <button
         class="ctrl-btn drag-handle"
         :class="{ 'is-locked': widget.locked }"
-        :title="widget.locked ? 'Unlock to move' : 'Drag to reposition'"
+        :title="widget.locked ? t('hub.pulse.unlockToMove') : t('hub.pulse.dragToReposition')"
         @mousedown="startDrag"
       >
         <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
@@ -134,14 +136,14 @@ function disableWidget() {
           :key="s"
           class="ctrl-btn size-btn"
           :class="{ active: widget.size === s }"
-          :title="s.charAt(0).toUpperCase() + s.slice(1)"
+          :title="t('hub.pulse.size' + s.charAt(0).toUpperCase() + s.slice(1))"
           @click="setSize(s)"
         >{{ s.charAt(0).toUpperCase() }}</button>
         <div class="divider" />
       </template>
 
       <!-- Configure (only when widget declares it) -->
-      <button v-if="widget.configurable" class="ctrl-btn" title="Configure" @click="openConfig(widget.id)">
+      <button v-if="widget.configurable" class="ctrl-btn" :title="t('hub.pulse.configure')" @click="openConfig(widget.id)">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
           <circle cx="12" cy="12" r="3"/>
@@ -152,7 +154,7 @@ function disableWidget() {
       <button
         class="ctrl-btn"
         :class="{ 'lock-active': widget.locked }"
-        :title="widget.locked ? 'Unlock position' : 'Lock position'"
+        :title="widget.locked ? t('hub.pulse.unlockPosition') : t('hub.pulse.lockPosition')"
         @click="toggleLock"
       >
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -164,12 +166,12 @@ function disableWidget() {
 
       <template v-if="widget.slot !== 'system-hub'">
         <div class="divider" />
-        <button class="ctrl-btn disable-btn" @click="disableWidget">Disable</button>
+        <button class="ctrl-btn disable-btn" @click="disableWidget">{{ t('hub.pulse.disable') }}</button>
       </template>
     </div>
 
     <!-- Temp-hide handle on the toolbar's top-right corner -->
-    <button class="hide-corner-btn" title="Hide for now" @click.stop="tempHide(widget.id)">
+    <button class="hide-corner-btn" :title="t('hub.pulse.hideForNow')" @click.stop="tempHide(widget.id)">
       <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.243 4.243L9.88 9.88" />
       </svg>

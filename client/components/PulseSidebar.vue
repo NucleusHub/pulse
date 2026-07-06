@@ -4,10 +4,12 @@ import { useDashboard } from '../composables/useDashboard.js'
 import { usePulse } from '../composables/usePulse.js'
 import { useAuth } from '@core/auth/useAuth.js'
 import { useTheme } from '@core/useTheme.js'
+import { useI18n } from '@core/useI18n.js'
 
 const { profile } = useAuth()
 const isAdmin = computed(() => profile.value?.role === 'admin')
 const { isDark } = useTheme()
+const { t } = useI18n()
 
 const props = defineProps({
   manifests: { type: Array, default: () => [] },
@@ -74,7 +76,7 @@ function toggleTempHide(id) {
         Pulse
       </div>
       <div v-if="!inline" style="display:flex;gap:4px">
-        <button class="icon-btn" title="Close Pulse" @click="$emit('close')">
+        <button class="icon-btn" :title="t('hub.pulse.closePulse')" @click="$emit('close')">
           <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/>
           </svg>
@@ -82,9 +84,9 @@ function toggleTempHide(id) {
       </div>
     </div>
 
-    <p class="hint">Drag widgets to reposition.<!-- Click + Add Widget to install more. --></p>
+    <p class="hint">{{ t('hub.pulse.dragHint') }}<!-- Click + Add Widget to install more. --></p>
 
-    <div class="section-label">Installed Widgets</div>
+    <div class="section-label">{{ t('hub.pulse.installedWidgets') }}</div>
 
     <ul class="widget-list">
       <li
@@ -94,15 +96,15 @@ function toggleTempHide(id) {
         :class="{ 'is-temp-hidden': isTempHidden(w.id) }"
       >
         <div class="widget-meta">
-          <span class="widget-name">{{ w.name }}</span>
-          <span v-if="isTempHidden(w.id)" class="temp-badge">Hidden this session</span>
+          <span class="widget-name">{{ w.nameKey ? t(w.nameKey) : w.name }}</span>
+          <span v-if="isTempHidden(w.id)" class="temp-badge">{{ t('hub.pulse.hiddenThisSession') }}</span>
         </div>
         <div class="widget-actions">
           <button
             v-if="canTempHide(w)"
             class="icon-toggle"
             :class="{ active: isTempHidden(w.id) }"
-            :title="isTempHidden(w.id) ? 'Show widget' : 'Hide for this session'"
+            :title="isTempHidden(w.id) ? t('hub.pulse.showWidget') : t('hub.pulse.hideThisSession')"
             @click="toggleTempHide(w.id)"
           >
             <svg v-if="isTempHidden(w.id)" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -113,17 +115,17 @@ function toggleTempHide(id) {
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
             </svg>
           </button>
-          <button class="toggle-btn disable" @click="disableWidget(w.id)">Disable</button>
+          <button class="toggle-btn disable" @click="disableWidget(w.id)">{{ t('hub.pulse.disable') }}</button>
         </div>
       </li>
 
-      <li v-if="!userWidgets.length" class="empty-hint">No widgets installed.</li>
-      <li v-else-if="!enabledUserWidgets.length" class="empty-hint">No widgets enabled.</li>
+      <li v-if="!userWidgets.length" class="empty-hint">{{ t('hub.pulse.noInstalled') }}</li>
+      <li v-else-if="!enabledUserWidgets.length" class="empty-hint">{{ t('hub.pulse.noEnabled') }}</li>
     </ul>
 
     <!-- Disabled widgets — parked below until re-enabled -->
     <template v-if="disabledUserWidgets.length">
-      <div class="section-label divider-label">Disabled</div>
+      <div class="section-label divider-label">{{ t('hub.pulse.disabledSection') }}</div>
       <ul class="widget-list">
         <li
           v-for="w in disabledUserWidgets"
@@ -131,16 +133,16 @@ function toggleTempHide(id) {
           class="widget-item is-disabled"
         >
           <div class="widget-meta">
-            <span class="widget-name">{{ w.name }}</span>
+            <span class="widget-name">{{ w.nameKey ? t(w.nameKey) : w.name }}</span>
           </div>
           <div class="widget-actions">
-            <button class="toggle-btn enable" @click="enableWidget(w.id)">Enable</button>
+            <button class="toggle-btn enable" @click="enableWidget(w.id)">{{ t('hub.pulse.enable') }}</button>
           </div>
         </li>
       </ul>
     </template>
 
-    <div class="section-label system-section-label">System</div>
+    <div class="section-label system-section-label">{{ t('hub.pulse.systemSection') }}</div>
 
     <ul class="widget-list">
       <li
@@ -150,16 +152,16 @@ function toggleTempHide(id) {
         :class="{ 'is-temp-hidden': isTempHidden(w.id) }"
       >
         <div class="widget-meta">
-          <span class="widget-name">{{ w.name }}</span>
-          <span v-if="isTempHidden(w.id)" class="temp-badge">Hidden this session</span>
-          <span v-else class="system-badge">🔒 Required</span>
+          <span class="widget-name">{{ w.nameKey ? t(w.nameKey) : w.name }}</span>
+          <span v-if="isTempHidden(w.id)" class="temp-badge">{{ t('hub.pulse.hiddenThisSession') }}</span>
+          <span v-else class="system-badge">🔒 {{ t('hub.pulse.required') }}</span>
         </div>
         <div class="widget-actions">
           <button
             v-if="canTempHide(w)"
             class="icon-toggle"
             :class="{ active: isTempHidden(w.id) }"
-            :title="isTempHidden(w.id) ? 'Show widget' : 'Hide for this session'"
+            :title="isTempHidden(w.id) ? t('hub.pulse.showWidget') : t('hub.pulse.hideThisSession')"
             @click="toggleTempHide(w.id)"
           >
             <svg v-if="isTempHidden(w.id)" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -173,7 +175,7 @@ function toggleTempHide(id) {
         </div>
       </li>
 
-      <li v-if="systemWidgets.length === 0" class="empty-hint">No system widgets.</li>
+      <li v-if="systemWidgets.length === 0" class="empty-hint">{{ t('hub.pulse.noSystem') }}</li>
     </ul>
 
     <!-- Add Widget button hidden for now — uncomment to restore.
@@ -192,7 +194,7 @@ function toggleTempHide(id) {
         <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V6l-9-4z" />
         </svg>
-        Admin Console
+        {{ t('core.sidebar.adminConsole') }}
       </a>
     </div>
   </aside>

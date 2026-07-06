@@ -10,6 +10,7 @@ export const HUB_MANIFESTS = [
   {
     id: 'hub-account',
     name: 'Account',
+    nameKey: 'hub.pulse.widget.account',
     slot: 'system-hub',
     sizes: ['small', 'large'],
     defaultSize: 'small',
@@ -19,6 +20,7 @@ export const HUB_MANIFESTS = [
   {
     id: 'hub-theme',
     name: 'Theme Changer',
+    nameKey: 'hub.pulse.widget.theme',
     slot: 'system-hub',
     sizes: ['small', 'large'],
     defaultSize: 'small',
@@ -28,6 +30,7 @@ export const HUB_MANIFESTS = [
   {
     id: 'hub-apps',
     name: 'App Buttons',
+    nameKey: 'hub.controls.appButtons',
     slot: 'system-hub',
     sizes: ['small', 'medium', 'large'],
     defaultSize: 'large',

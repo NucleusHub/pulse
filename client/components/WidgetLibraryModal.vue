@@ -2,6 +2,9 @@
 import { computed } from 'vue'
 import { useDashboard } from '../composables/useDashboard.js'
 import { formatVersion } from '@core/version.js'
+import { useI18n } from '@core/useI18n.js'
+
+const { t } = useI18n()
 
 const props = defineProps({
   manifests: { type: Array, default: () => [] },
@@ -39,7 +42,7 @@ function addWidget(manifest) {
   <div class="backdrop" @click.self="$emit('close')">
     <div class="modal">
       <div class="modal-header">
-        <h2 class="modal-title">Add Widget</h2>
+        <h2 class="modal-title">{{ t('hub.pulse.addWidget') }}</h2>
         <button class="icon-btn" @click="$emit('close')">
           <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/>
@@ -47,7 +50,7 @@ function addWidget(manifest) {
         </button>
       </div>
 
-      <p class="modal-hint">Widgets are auto-discovered from installed packages.</p>
+      <p class="modal-hint">{{ t('hub.pulse.autoDiscovered') }}</p>
 
       <div class="widget-list">
         <div v-for="w in libraryWidgets" :key="w.id" class="widget-card">
@@ -58,12 +61,12 @@ function addWidget(manifest) {
             </div>
             <p class="widget-desc">{{ w.description }}</p>
           </div>
-          <button v-if="!w.isEnabled" class="add-btn" @click="addWidget(w); $emit('close')">Add</button>
-          <span v-else class="added-label">Active</span>
+          <button v-if="!w.isEnabled" class="add-btn" @click="addWidget(w); $emit('close')">{{ t('hub.pulse.add') }}</button>
+          <span v-else class="added-label">{{ t('hub.pulse.active') }}</span>
         </div>
 
         <p v-if="libraryWidgets.length === 0" class="empty">
-          No additional widgets available.
+          {{ t('hub.pulse.noAdditional') }}
         </p>
       </div>
     </div>
