@@ -134,6 +134,7 @@ export function useDashboard() {
         position: { x: 20, y: 20 },
         size: 'medium',
         config: {},
+        visibility: { scope: 'dashboard', apps: [] },
         ...patch,
       })
     }
@@ -173,6 +174,7 @@ export function useDashboard() {
         position: defaultPosition(m, stackOffset),
         size:     m.defaultSize ?? m.sizes?.[0] ?? 'medium',
         config:   {},
+        visibility: { scope: 'dashboard', apps: [] },
       })
       stackOffset++
     }
