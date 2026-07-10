@@ -83,6 +83,7 @@ function addWidget(manifest) {
   align-items: center;
   justify-content: center;
   z-index: 200;
+  animation: wl-fade 0.18s ease both;
 }
 
 .modal {
@@ -97,6 +98,13 @@ function addWidget(manifest) {
   flex-direction: column;
   color: #fff;
   box-shadow: 0 16px 60px rgba(0, 0, 0, 0.6);
+  animation: wl-pop 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes wl-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes wl-pop {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
 }
 
 .modal-header {
@@ -221,5 +229,23 @@ function addWidget(manifest) {
   color: rgba(255, 255, 255, 0.28);
   font-size: 13px;
   margin: 0;
+}
+
+/* Discovered widgets settle in one after another. */
+.widget-card { animation: wl-card 0.34s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.widget-card:nth-child(1) { animation-delay: 0.04s; }
+.widget-card:nth-child(2) { animation-delay: 0.08s; }
+.widget-card:nth-child(3) { animation-delay: 0.12s; }
+.widget-card:nth-child(4) { animation-delay: 0.16s; }
+.widget-card:nth-child(5) { animation-delay: 0.2s; }
+.widget-card:nth-child(n+6) { animation-delay: 0.24s; }
+
+@keyframes wl-card {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop, .modal, .widget-card { animation: none; }
 }
 </style>
