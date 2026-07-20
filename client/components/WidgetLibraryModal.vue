@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useDashboard } from '../composables/useDashboard.js'
 import { formatVersion } from '@core/version.js'
 import { useI18n } from '@core/useI18n.js'
+import { Icon } from '@core/icons'
 
 const { t } = useI18n()
 
@@ -44,9 +45,7 @@ function addWidget(manifest) {
       <div class="modal-header">
         <h2 class="modal-title">{{ t('hub.pulse.addWidget') }}</h2>
         <button class="icon-btn" @click="$emit('close')">
-          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
+          <Icon name="close" :sw="2.5" />
         </button>
       </div>
 

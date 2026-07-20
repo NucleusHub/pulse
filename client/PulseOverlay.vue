@@ -8,6 +8,10 @@ import { useI18n } from '@core/useI18n.js'
 import PulseSidebar from './components/PulseSidebar.vue'
 import WidgetLibraryModal from './components/WidgetLibraryModal.vue'
 import PulseWidgetControls from './components/PulseWidgetControls.vue'
+import { Icon } from '@core/icons'
+import ChevronRightIcon from './assets/icons/chevron-right.svg?component'
+import ChevronLeftIcon from './assets/icons/chevron-left.svg?component'
+import DesktopIcon from './assets/icons/desktop.svg?component'
 
 const props = defineProps({
   manifests: { type: Array, default: () => [] },
@@ -126,9 +130,7 @@ function anchorTop(w) {
           :title="t('hub.pulse.showSidebar')"
           @click="sidebarCollapsed = false">
           <span class="restore-glyph">◈</span>
-          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
-          </svg>
+          <ChevronRightIcon width="11" height="11" />
         </button>
       </Transition>
 
@@ -138,9 +140,7 @@ function anchorTop(w) {
           class="sidebar-collapse-tab"
           :title="t('hub.pulse.hideSidebar')"
           @click="sidebarCollapsed = true">
-          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
-          </svg>
+          <ChevronLeftIcon width="11" height="11" />
         </button>
       </Transition>
     </template>
@@ -150,23 +150,15 @@ function anchorTop(w) {
     <div v-else class="mobile-wrap">
       <div class="mobile-notice">
         <button class="notice-close" @click="closePulse">
-          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <Icon name="close" :sw="2.5" />
         </button>
-        <svg class="notice-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0H3"
-          />
-        </svg>
+        <DesktopIcon class="notice-icon" />
         <p class="notice-title">{{ t('hub.pulse.desktopOnly') }}</p>
         <p class="notice-body">{{ t('hub.pulse.desktopOnlyBody') }}</p>
       </div>
 
       <a v-if="isAdmin" class="mobile-admin-btn" href="/admin/">
-        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V6l-9-4z" />
-        </svg>
+        <Icon name="shield" fill />
         {{ t('core.sidebar.adminConsole') }}
       </a>
     </div>

@@ -4,6 +4,9 @@ import { useDashboard } from '../composables/useDashboard.js'
 import { usePulse } from '../composables/usePulse.js'
 import { useTheme } from '@core/useTheme.js'
 import { useI18n } from '@core/useI18n.js'
+import GripDotsIcon from '../assets/icons/grip-dots.svg?component'
+import SettingsIcon from '../assets/icons/settings.svg?component'
+import EyeOffIcon from '../assets/icons/eye-off.svg?component'
 
 const { isDark } = useTheme()
 const { t } = useI18n()
@@ -87,11 +90,7 @@ function disableWidget() {
         :title="widget.locked ? t('hub.pulse.unlockToMove') : t('hub.pulse.dragToMove')"
         @mousedown="!widget.locked && emit('movestart', $event)"
       >
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-          <circle cx="9"  cy="5"  r="2"/><circle cx="15" cy="5"  r="2"/>
-          <circle cx="9"  cy="12" r="2"/><circle cx="15" cy="12" r="2"/>
-          <circle cx="9"  cy="19" r="2"/><circle cx="15" cy="19" r="2"/>
-        </svg>
+        <GripDotsIcon width="12" height="12" />
       </button>
       <div class="divider" />
       <span class="ctrl-name">{{ widget.name }}</span>
@@ -120,11 +119,7 @@ function disableWidget() {
         :title="widget.locked ? t('hub.pulse.unlockToMove') : t('hub.pulse.dragToReposition')"
         @mousedown="startDrag"
       >
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-          <circle cx="9"  cy="5"  r="2"/><circle cx="15" cy="5"  r="2"/>
-          <circle cx="9"  cy="12" r="2"/><circle cx="15" cy="12" r="2"/>
-          <circle cx="9"  cy="19" r="2"/><circle cx="15" cy="19" r="2"/>
-        </svg>
+        <GripDotsIcon width="12" height="12" />
       </button>
 
       <div class="divider" />
@@ -145,10 +140,7 @@ function disableWidget() {
       <!-- Configure — for widgets with their own settings, or any that can be
            shown in other apps (they need the "Show in" picker). -->
       <button v-if="widget.configurable || widget.crossApp" class="ctrl-btn" :title="t('hub.pulse.configure')" @click="openConfig(widget.id)">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-          <circle cx="12" cy="12" r="3"/>
-        </svg>
+        <SettingsIcon width="13" height="13" />
       </button>
 
       <!-- Lock toggle -->
@@ -173,9 +165,7 @@ function disableWidget() {
 
     <!-- Temp-hide handle on the toolbar's top-right corner -->
     <button class="hide-corner-btn" :title="t('hub.pulse.hideForNow')" @click.stop="tempHide(widget.id)">
-      <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.243 4.243L9.88 9.88" />
-      </svg>
+      <EyeOffIcon width="11" height="11" />
     </button>
   </div>
 </template>
