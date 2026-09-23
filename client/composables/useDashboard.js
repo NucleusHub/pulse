@@ -5,40 +5,6 @@ const SNAP_THRESHOLD = 15
 
 export const SIZE_DIMS = { small: 280, medium: 360, large: 480 }
 
-// Hub UI pseudo-widgets — movable + resizable but not disableable
-export const HUB_MANIFESTS = [
-  {
-    id: 'hub-account',
-    name: 'Account',
-    nameKey: 'hub.pulse.widget.account',
-    slot: 'system-hub',
-    sizes: ['small', 'large'],
-    defaultSize: 'small',
-    sizeDims: { small: 40, large: 220 },
-    height: 40,
-  },
-  {
-    id: 'hub-theme',
-    name: 'Theme Changer',
-    nameKey: 'hub.pulse.widget.theme',
-    slot: 'system-hub',
-    sizes: ['small', 'large'],
-    defaultSize: 'small',
-    sizeDims: { small: 114, large: 210 },
-    height: 46,
-  },
-  {
-    id: 'hub-apps',
-    name: 'App Buttons',
-    nameKey: 'hub.controls.appButtons',
-    slot: 'system-hub',
-    sizes: ['small', 'medium', 'large'],
-    defaultSize: 'large',
-    sizeDims: { small: 280, medium: 340, large: 420 },
-    overlayControls: false,
-  },
-]
-
 // Returns the pixel width for a widget at a given size,
 // respecting per-widget sizeDims when present.
 export function getWidgetWidth(widget, size) {

@@ -66,7 +66,7 @@ const heights = ref({})
 function measureHeights() {
   const next = {}
   for (const w of editableWidgets.value) {
-    const el = document.querySelector(`[data-pulse-id="${w.id}"]`)
+    const el = document.querySelector(`[data-widget-id="${w.id}"]`)
     if (el) next[w.id] = el.offsetHeight
   }
   heights.value = next
