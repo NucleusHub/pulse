@@ -45,7 +45,7 @@ function addWidget(manifest) {
       <div class="modal-header">
         <h2 class="modal-title">{{ t('hub.pulse.addWidget') }}</h2>
         <button class="icon-btn" @click="$emit('close')">
-          <Icon name="close" :sw="2.5" />
+          <Icon width="15" height="15" name="close" :sw="2.5" />
         </button>
       </div>
 

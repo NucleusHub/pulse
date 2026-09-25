@@ -150,7 +150,7 @@ function anchorTop(w) {
     <div v-else class="mobile-wrap">
       <div class="mobile-notice">
         <button class="notice-close" @click="closePulse">
-          <Icon name="close" :sw="2.5" />
+          <Icon width="15" height="15" name="close" :sw="2.5" />
         </button>
         <DesktopIcon class="notice-icon" />
         <p class="notice-title">{{ t('hub.pulse.desktopOnly') }}</p>
@@ -158,7 +158,7 @@ function anchorTop(w) {
       </div>
 
       <a v-if="isAdmin" class="mobile-admin-btn" href="/admin/">
-        <Icon name="shield" fill />
+        <Icon width="16" height="16" name="shield" fill />
         {{ t('core.sidebar.adminConsole') }}
       </a>
     </div>

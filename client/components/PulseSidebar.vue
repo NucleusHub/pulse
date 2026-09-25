@@ -79,7 +79,7 @@ function toggleTempHide(id) {
       </div>
       <div v-if="!inline" style="display:flex;gap:4px">
         <button class="icon-btn" :title="t('hub.pulse.closePulse')" @click="$emit('close')">
-          <Icon name="close" :sw="2.5" />
+          <Icon width="15" height="15" name="close" :sw="2.5" />
         </button>
       </div>
     </div>
@@ -107,8 +107,8 @@ function toggleTempHide(id) {
             :title="isTempHidden(w.id) ? t('hub.pulse.showWidget') : t('hub.pulse.hideThisSession')"
             @click="toggleTempHide(w.id)"
           >
-            <Icon name="eyeOff" v-if="isTempHidden(w.id)" />
-            <Icon name="eye" v-else />
+            <Icon width="14" height="14" name="eyeOff" v-if="isTempHidden(w.id)" />
+            <Icon width="14" height="14" name="eye" v-else />
           </button>
           <button class="toggle-btn disable" @click="disableWidget(w.id)">{{ t('hub.pulse.disable') }}</button>
         </div>
@@ -159,8 +159,8 @@ function toggleTempHide(id) {
             :title="isTempHidden(w.id) ? t('hub.pulse.showWidget') : t('hub.pulse.hideThisSession')"
             @click="toggleTempHide(w.id)"
           >
-            <Icon name="eyeOff" v-if="isTempHidden(w.id)" />
-            <Icon name="eye" v-else />
+            <Icon width="14" height="14" name="eyeOff" v-if="isTempHidden(w.id)" />
+            <Icon width="14" height="14" name="eye" v-else />
           </button>
         </div>
       </li>
@@ -179,7 +179,7 @@ function toggleTempHide(id) {
 
     <div v-if="isAdmin" class="sidebar-footer">
       <a class="admin-btn" href="/admin/">
-        <Icon name="shield" fill />
+        <Icon width="14" height="14" name="shield" fill />
         {{ t('core.sidebar.adminConsole') }}
       </a>
     </div>
