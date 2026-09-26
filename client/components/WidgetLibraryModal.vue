@@ -230,7 +230,6 @@ function addWidget(manifest) {
   margin: 0;
 }
 
-/* Discovered widgets settle in one after another. */
 .widget-card { animation: wl-card 0.34s cubic-bezier(0.22, 1, 0.36, 1) both; }
 .widget-card:nth-child(1) { animation-delay: 0.04s; }
 .widget-card:nth-child(2) { animation-delay: 0.08s; }

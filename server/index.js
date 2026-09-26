@@ -12,7 +12,6 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/nucleu
 app.use(cors({ origin: true, credentials: true }))
 app.use(express.json())
 app.use(cookieParser())
-// Refuse all Pulse API access for users who have Pulse disabled (admin override).
 app.use('/api/pulse', requireAppEnabled('pulse'))
 app.use('/api/pulse/dashboard', dashboardRouter)
 app.get('/health', (_, res) => res.json({ ok: true }))

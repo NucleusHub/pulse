@@ -5,20 +5,16 @@ const SNAP_THRESHOLD = 15
 
 export const SIZE_DIMS = { small: 280, medium: 360, large: 480 }
 
-// Returns the pixel width for a widget at a given size,
-// respecting per-widget sizeDims when present.
 export function getWidgetWidth(widget, size) {
   const s = size ?? widget.size ?? 'medium'
   return widget.sizeDims?.[s] ?? SIZE_DIMS[s] ?? 360
 }
 
-// Module-level singleton — all callers share the same reactive state
 const state = ref(null)
 const loading = ref(false)
 const error = ref(null)
 let initialized = false
 
-// Hoisted so resize handler and useDashboard() can both call it
 async function saveState() {
   if (!state.value) return
   try {
@@ -32,12 +28,7 @@ async function saveState() {
   }
 }
 
-// Clamp widget positions to the viewport on resize so nothing drifts
-// off-screen. Important persistence rules:
-//   • Mobile uses an ephemeral layout — never clamp or persist from it, so the
-//     stored desktop positions are left untouched when viewed on a phone.
-//   • Locked widgets must NEVER have their position changed or re-saved.
-//   • Only persist when an unlocked widget actually moved.
+// Never clamp or persist from the mobile layout, and never move locked widgets.
 const MOBILE_BREAKPOINT = 768
 let _clampTimer = null
 function clampToViewport() {
@@ -119,7 +110,6 @@ export function useDashboard() {
       const w = m.sizeDims?.medium ?? 340
       return { x: Math.max(16, Math.round((vw - w) / 2)), y: Math.max(60, Math.round((vh - 280) / 2)) }
     }
-    // Regular widgets: stack in the bottom-right
     const w = getWidgetWidth(m, m.defaultSize)
     return {
       x: Math.max(16, vw - w - 20),
@@ -127,7 +117,6 @@ export function useDashboard() {
     }
   }
 
-  // Seeds default state for any widget not yet tracked. Does NOT save to DB.
   function ensureWidgets(manifests) {
     if (!state.value) return
     let stackOffset = state.value.widgets.filter(w => w.enabled).length

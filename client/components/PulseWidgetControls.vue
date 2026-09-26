@@ -19,8 +19,6 @@ const emit = defineEmits(['movestart'])
 
 const { openConfig, tempHide } = usePulse()
 
-// Nucleus widgets have no sizes — the bar shows a move handle, name + disable.
-// Their dragging is handled by the parent (force layout), via the movestart event.
 const minimal = computed(() => props.widget.slot === 'nucleus')
 
 const { getWidgetState, saveState, snapPosition } = useDashboard()
@@ -82,7 +80,6 @@ function disableWidget() {
 
 <template>
   <div class="controls-root" :class="{ dragging: isDragging, 'theme-light': !isDark }">
-    <!-- Minimal bar for nucleus widgets: move handle + name + lock + disable -->
     <div v-if="minimal" class="controls-bar">
       <button
         class="ctrl-btn drag-handle"
@@ -112,7 +109,6 @@ function disableWidget() {
     </div>
 
     <div v-else class="controls-bar">
-      <!-- Drag handle -->
       <button
         class="ctrl-btn drag-handle"
         :class="{ 'is-locked': widget.locked }"
@@ -124,7 +120,6 @@ function disableWidget() {
 
       <div class="divider" />
 
-      <!-- Size presets (only shown when widget declares multiple sizes) -->
       <template v-if="widget.sizes && widget.sizes.length > 1">
         <button
           v-for="s in widget.sizes"
@@ -137,13 +132,10 @@ function disableWidget() {
         <div class="divider" />
       </template>
 
-      <!-- Configure — for widgets with their own settings, or any that can be
-           shown in other apps (they need the "Show in" picker). -->
       <button v-if="widget.configurable || widget.crossApp" class="ctrl-btn" :title="t('hub.pulse.configure')" @click="openConfig(widget.id)">
         <SettingsIcon width="13" height="13" />
       </button>
 
-      <!-- Lock toggle -->
       <button
         class="ctrl-btn"
         :class="{ 'lock-active': widget.locked }"
@@ -163,7 +155,6 @@ function disableWidget() {
       </template>
     </div>
 
-    <!-- Temp-hide handle on the toolbar's top-right corner -->
     <button class="hide-corner-btn" :title="t('hub.pulse.hideForNow')" @click.stop="tempHide(widget.id)">
       <EyeOffIcon width="11" height="11" />
     </button>
@@ -173,7 +164,7 @@ function disableWidget() {
 <style scoped>
 .controls-root {
   position: relative;
-  width: fit-content;   /* shrink to the bar so the hide handle sits on its corner */
+  width: fit-content;
 }
 
 .controls-root.dragging {
@@ -262,7 +253,6 @@ function disableWidget() {
   flex-shrink: 0;
 }
 
-/* ── Light mode (theme-light class set from useTheme) ────────────────────── */
 .theme-light .controls-bar {
   background: rgba(255, 255, 255, 0.9);
   border-color: rgba(15, 23, 42, 0.12);
@@ -274,10 +264,8 @@ function disableWidget() {
 .theme-light .disable-btn { color: rgba(15, 23, 42, 0.45); }
 .theme-light .disable-btn:hover { background: rgba(239, 68, 68, 0.15); color: rgba(220, 38, 38, 0.95); }
 .theme-light .divider { background: rgba(15, 23, 42, 0.12); }
-/* Keep the active lock gold in light mode (otherwise the ctrl-btn rule greys it) */
 .theme-light .ctrl-btn.lock-active { color: rgba(202, 138, 4, 1); }
 
-/* Temp-hide handle on the toolbar corner */
 .hide-corner-btn {
   position: absolute;
   top: 0;

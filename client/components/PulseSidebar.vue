@@ -34,13 +34,9 @@ const allMerged = computed(() =>
 const userWidgets = computed(() =>
   allMerged.value.filter(w => w.slot !== 'system' && w.slot !== 'system-hub')
 )
-// Enabled widgets up top; disabled ones drop into their own section below.
 const enabledUserWidgets  = computed(() => userWidgets.value.filter(w => w.enabled))
 const disabledUserWidgets = computed(() => userWidgets.value.filter(w => !w.enabled))
 
-// Required widgets — can't be disabled, but can still be temp-hidden:
-// Core plus the hub's own UI (Account / Theme Changer / App Buttons). System
-// Info is the background data provider (no UI), so it's excluded from the list.
 const systemWidgets = computed(() =>
   allMerged.value.filter(w => (w.slot === 'system' || w.slot === 'system-hub') && w.id !== 'sysinfo')
 )
@@ -57,9 +53,6 @@ function disableWidget(id) {
   saveState()
 }
 
-// Per-session hide: declutters the canvas while editing. Cleared when Pulse
-// closes, so widgets reappear automatically. Core has no UI and App Buttons
-// must always stay, so neither can be temp-hidden.
 const NO_TEMP_HIDE = new Set(['core', 'hub-apps'])
 function canTempHide(w) {
   return w.enabled !== false && !NO_TEMP_HIDE.has(w.id)
@@ -84,7 +77,7 @@ function toggleTempHide(id) {
       </div>
     </div>
 
-    <p class="hint">{{ t('hub.pulse.dragHint') }}<!-- Click + Add Widget to install more. --></p>
+    <p class="hint">{{ t('hub.pulse.dragHint') }}</p>
 
     <div class="section-label">{{ t('hub.pulse.installedWidgets') }}</div>
 
@@ -118,7 +111,6 @@ function toggleTempHide(id) {
       <li v-else-if="!enabledUserWidgets.length" class="empty-hint">{{ t('hub.pulse.noEnabled') }}</li>
     </ul>
 
-    <!-- Disabled widgets — parked below until re-enabled -->
     <template v-if="disabledUserWidgets.length">
       <div class="section-label divider-label">{{ t('hub.pulse.disabledSection') }}</div>
       <ul class="widget-list">
@@ -168,15 +160,6 @@ function toggleTempHide(id) {
       <li v-if="systemWidgets.length === 0" class="empty-hint">{{ t('hub.pulse.noSystem') }}</li>
     </ul>
 
-    <!-- Add Widget button hidden for now — uncomment to restore.
-    <div class="sidebar-footer">
-      <button class="add-btn" @click="$emit('open-library')">
-        <PlusIcon width="13" height="13" />
-        Add Widget
-      </button>
-    </div>
-    -->
-
     <div v-if="isAdmin" class="sidebar-footer">
       <a class="admin-btn" href="/admin/">
         <Icon width="14" height="14" name="shield" fill />
@@ -193,7 +176,7 @@ function toggleTempHide(id) {
   top: 16px;
   bottom: 16px;
   width: 220px;
-  z-index: 20;   /* above widget toolbars so they never overlap the sidebar */
+  z-index: 20;
   background: rgba(10, 10, 22, 0.92);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -210,7 +193,6 @@ function toggleTempHide(id) {
   transform: translateX(calc(-100% - 32px));
 }
 
-/* When rendered inside the mobile drawer — no absolute positioning, fills parent */
 .sidebar.is-inline {
   position: static;
   width: 100%;
@@ -465,7 +447,6 @@ function toggleTempHide(id) {
   color: #fff;
 }
 
-/* ── Light mode (theme-light class set from useTheme) ────────────────────── */
 .sidebar.theme-light:not(.is-inline) {
   background: rgba(255, 255, 255, 0.92);
   border-color: rgba(15, 23, 42, 0.1);

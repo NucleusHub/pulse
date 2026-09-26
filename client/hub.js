@@ -1,8 +1,3 @@
-// Pulse's hub extension — makes Pulse the hub's dashboard provider. The hub
-// globs `hub/libs/<appId>/hub.js` out of its hub libraries (apps whose client/
-// has no vite.config, linked into the hub by infra/tool) and falls back to a static
-// layout when none is installed. See hub/src/composables/useDashboardProvider.js
-// for the contract; this file only adapts Pulse's composables to it.
 import { defineAsyncComponent } from 'vue'
 import { usePulse } from './composables/usePulse.js'
 import { useDashboard, getWidgetWidth } from './composables/useDashboard.js'

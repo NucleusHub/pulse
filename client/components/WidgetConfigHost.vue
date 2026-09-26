@@ -4,14 +4,7 @@ import { usePulse } from '../composables/usePulse.js'
 import { useDashboard } from '../composables/useDashboard.js'
 import { useRegistry } from '@core/useRegistry.js'
 
-// Wiring for the shared widget settings modal, rendered by the host (the hub)
-// through Pulse's hub extension (see ../hub.js). Pulse's gear button opens it via
-// usePulse().openConfig(id); this resolves the widget's Config.vue and binds its
-// saved Pulse state (config + cross-app visibility) to the shared modal,
-// committing on Save. The modal chrome + the "Show in" toggle live in the shared
-// widget package (@widgets-core) so every app renders widgets the same way. That
-// package is optional, so it's globbed rather than imported: without it there
-// are no widgets to configure and this renders nothing.
+// Globbed, not imported: @widgets-core is optional.
 const [modalLoader] = Object.values(import.meta.glob('@widgets-core/components/WidgetConfigModal.vue'))
 const WidgetConfigModal = modalLoader ? defineAsyncComponent(modalLoader) : null
 const [resolver] = Object.values(import.meta.glob('@widgets-core/resolve.js', { eager: true }))
@@ -24,7 +17,6 @@ const { getWidgetState, setWidgetState, saveState } = useDashboard()
 const manifest = computed(() => manifests.value.find(m => m.id === configWidgetId.value) || null)
 const ConfigComp = computed(() => configWidgetId.value ? resolveWidgetConfig(configWidgetId.value) : null)
 
-// Draft copies so edits aren't committed until "Save".
 const config = ref({})
 const visibility = ref({ scope: 'dashboard', apps: [] })
 

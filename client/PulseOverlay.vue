@@ -28,8 +28,8 @@ const isMobile        = ref(typeof window !== 'undefined' ? window.innerWidth < 
 const showLibrary     = ref(false)
 const sidebarCollapsed = ref(false)
 
-const CONTROLS_H = 34   // approx toolbar height
-const TOOLBAR_GAP = 8   // breathing room between the toolbar and its widget
+const CONTROLS_H = 34
+const TOOLBAR_GAP = 8
 
 function onKeydown(e) { if (e.key === 'Escape') closePulse() }
 function onResize()   { isMobile.value = window.innerWidth < 768; nextTick(measureHeights) }
@@ -59,9 +59,6 @@ const editableWidgets = computed(() =>
     .filter(w => w.enabled && !tempHidden.value.has(w.id))
 )
 
-// Actual rendered heights of the widgets (measured from the DOM), so the
-// "below" placement lands under widgets that grow/shrink with size changes
-// (e.g. the account widget: small avatar vs. tall large card).
 const heights = ref({})
 function measureHeights() {
   const next = {}
@@ -71,7 +68,6 @@ function measureHeights() {
   }
   heights.value = next
 }
-// Re-measure whenever the set of widgets or any of their sizes change.
 watch(
   () => editableWidgets.value.map(w => `${w.id}:${w.size}`).join(','),
   () => nextTick(measureHeights),
@@ -79,9 +75,6 @@ watch(
 )
 
 function anchorTop(w) {
-  // Float the toolbar a gap above the widget; if there isn't room above
-  // (widget near the top of the viewport), drop it below the widget instead,
-  // using the measured height so it clears widgets of any size.
   const aboveTop = w.position.y - TOOLBAR_GAP - CONTROLS_H
   if (aboveTop >= 4) return aboveTop + 'px'
   const h = heights.value[w.id] ?? w.height ?? 48
@@ -91,10 +84,6 @@ function anchorTop(w) {
 
 <template>
   <div class="pulse-overlay" :class="{ 'theme-light': !isDark }">
-    <!-- Dimming lives in HomeView (below the widget canvas) so the widgets you're
-         editing stay bright; this overlay only holds the bright edit chrome. -->
-
-    <!-- Desktop-only elements: edit banner + widget controls -->
     <template v-if="!isMobile">
       <div class="edit-banner" aria-live="polite">
         <span class="edit-dot" />
@@ -115,7 +104,6 @@ function anchorTop(w) {
       </div>
     </template>
 
-    <!-- Desktop sidebar + widget controls -->
     <template v-if="!isMobile">
       <PulseSidebar
         :manifests="props.manifests"
@@ -134,7 +122,6 @@ function anchorTop(w) {
         </button>
       </Transition>
 
-      <!-- Collapse handle — a bump centered on the sidebar's right border -->
       <Transition name="collapse-tab-fade">
         <button v-if="!sidebarCollapsed"
           class="sidebar-collapse-tab"
@@ -145,8 +132,6 @@ function anchorTop(w) {
       </Transition>
     </template>
 
-    <!-- Mobile: desktop-only notice. Admins still get the admin console here,
-         since it's the only Pulse feature usable on a phone. -->
     <div v-else class="mobile-wrap">
       <div class="mobile-notice">
         <button class="notice-close" @click="closePulse">
@@ -181,7 +166,6 @@ function anchorTop(w) {
 
 .pulse-overlay > * { pointer-events: auto; }
 
-/* ── Desktop edit banner ── */
 .edit-banner {
   position: fixed;
   top: 14px;
@@ -217,7 +201,6 @@ function anchorTop(w) {
   50%       { opacity: 0.3; }
 }
 
-/* ── Sidebar restore tab ── */
 .sidebar-restore-tab {
   position: absolute;
   z-index: 20;
@@ -256,11 +239,9 @@ function anchorTop(w) {
 .tab-slide-enter-from,
 .tab-slide-leave-to { opacity: 0; transform: translateY(-50%) translateX(-12px); }
 
-/* ── Collapse handle: a bump on the middle of the sidebar's right border ── */
 .sidebar-collapse-tab {
   position: absolute;
   z-index: 20;
-  /* sidebar: left 16px + width 220px → sits flush on its right border */
   left: 236px;
   top: 50%;
   transform: translateY(-50%);
@@ -291,14 +272,12 @@ function anchorTop(w) {
 .collapse-tab-fade-enter-from,
 .collapse-tab-fade-leave-to { opacity: 0; }
 
-/* ── Widget anchors ── */
 .widget-anchor {
   position: absolute;
   pointer-events: none;
 }
 .widget-anchor > * { pointer-events: auto; }
 
-/* ── Mobile desktop-only notice ── */
 .mobile-wrap {
   position: fixed;
   top: 50%;
@@ -390,7 +369,6 @@ function anchorTop(w) {
   line-height: 1.5;
 }
 
-/* ── Light mode (theme-light class set from useTheme) ────────────────────── */
 .theme-light .sidebar-restore-tab,
 .theme-light .sidebar-collapse-tab {
   background: rgba(255, 255, 255, 0.92);

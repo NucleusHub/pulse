@@ -9,8 +9,6 @@ function requireAdmin(req, res, next) {
   next()
 }
 
-// Called by the admin panel when a user is deleted: drop their saved dashboard.
-//   POST /api/pulse/dashboard/users/:userId/teardown
 router.post('/users/:userId/teardown', requireAuth, requireAdmin, async (req, res) => {
   try {
     await Dashboard.deleteOne({ userId: String(req.params.userId) })
